@@ -4,6 +4,7 @@ import { cookies } from 'next/headers';
 import { API_KEY, BACKEND_URL } from "@/utils/api";
 import { fetchWithAuth } from "@/lib/fetchWithAuth";
 import type { LoginPayload } from "@/types";
+import { redirect } from 'next/navigation';
 
 async function saveBackendCookies(setCookieHeaders: (string | null)[]) {
     if (!setCookieHeaders || setCookieHeaders.length === 0) return;
@@ -151,11 +152,8 @@ export async function logoutAction() {
         cookieStore.delete('accessToken');
         cookieStore.delete('refreshToken');
     }
+    redirect('/login');
 
-    return {
-        success: true,
-        message: "Logged out successfully!",
-    };
 }
 
 // FORGOT PASSWORD ACTION
@@ -324,25 +322,33 @@ export async function refreshTokenAction() {
 // GET USER PROFILE ACTION
 export async function getUserProfile() {
     try {
-        const response = await fetchWithAuth('/api/v1/auth/me', {
+        const response = await fetchWithAuth('/api/v1/user/profile', {
             method: 'GET',
         });
-
-        const data = await response.json();
 
         if (!response.ok) {
             return {
                 success: false,
-                message: data.message || "Failed to fetch user data.",
+                message: "Failed to fetch profile.",
             };
         }
+
+        const contentType = response.headers.get("content-type");
+        if (!contentType || !contentType.includes("application/json")) {
+            console.error("getUserProfile Error: Non-JSON response received from backend");
+            return {
+                success: false,
+                message: "Invalid response structure from backend.",
+            };
+        }
+
+        const data = await response.json();
 
         return {
             success: true,
             data: data?.data || data,
         };
-    } catch (error) {
-        console.error("getUserProfile Action Error:", error);
+    } catch {
         return {
             success: false,
             message: "Something went wrong on the server.",
