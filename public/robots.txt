@@ -1,0 +1,8 @@
+User-agent: *
+Disallow: /admin/
+Disallow: /admin
+Disallow: /api/
+
+Allow: /
+
+Sitemap: https://dev.selfpublicationbd.com/sitemap.xml
