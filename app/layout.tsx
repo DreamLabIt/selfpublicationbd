@@ -50,7 +50,7 @@ export default async function RootLayout({
 }>) {
   const cookieStore = await cookies();
   const hasToken = Boolean(
-    cookieStore.get("accessToken")?.value || cookieStore.get("refreshToken")?.value
+    cookieStore.get("refreshToken")?.value || cookieStore.get("accessToken")?.value
   );
 
   return (
