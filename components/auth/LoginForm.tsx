@@ -7,9 +7,11 @@ import { useForm } from "react-hook-form";
 import type { LoginPayload, LoginFormInputs } from "@/types";
 import { loginAction } from "@/app/actions/auth";
 import { toast } from "sonner";
+import { useAuth } from "@/context/AuthContext";
 
 export default function LoginForm() {
     const router = useRouter();
+    const { refetchUser } = useAuth();
     const [loading, setLoading] = useState(false);
     const [showPass, setShowPass] = useState(false);
 
@@ -71,11 +73,14 @@ export default function LoginForm() {
                 }
 
                 toast.success(res.message || "Login successful!");
+
+                await refetchUser();
+
                 const destination = res.redirectUrl || "/profile";
                 setTimeout(() => {
                     router.push(destination);
                     router.refresh();
-                }, 1000);
+                }, 500);
             } else {
                 toast.error(res?.message || "Invalid credentials.");
             }
@@ -190,7 +195,6 @@ export default function LoginForm() {
                             )}
                         </div>
 
-                        {/* Updated Remember Me Checkbox */}
                         <div className="flex items-center gap-2">
                             <input
                                 type="checkbox"
@@ -238,3 +242,4 @@ export default function LoginForm() {
         </div>
     );
 }
+

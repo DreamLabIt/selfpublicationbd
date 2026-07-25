@@ -1,21 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState, MouseEvent, ComponentType, ReactNode } from "react";
+import { useState, useEffect, useRef, MouseEvent, ComponentType, ReactNode } from "react";
 import { useCart } from "@/lib/cart";
+import { useAuth } from "@/context/AuthContext";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import CartDrawer from "./CartDrawer";
 import { Button } from "../ui/button";
+import CartDrawer from "./CartDrawer";
 import UserIcon from "../icons/UserIcon";
 import LogoutIcon from "../icons/LogoutIcon";
 import ShoppingCartIcon from "../icons/ShoppingCartIcon";
 import MenuIcon from "../icons/MenuIcon";
-import { getUserProfile, logoutAction } from "@/app/actions/auth";
-
-export type User = {
-    name?: string;
-    email?: string;
-};
 
 type SafeSheetProps = {
     open?: boolean;
@@ -44,37 +39,22 @@ interface NavbarActionsProps {
 
 export default function NavbarActions({ navItems, pathname }: NavbarActionsProps) {
     const { count } = useCart();
-    const [user, setUser] = useState<User | null>(null);
+    const { hasToken, user, loading, logout } = useAuth();
     const [open, setOpen] = useState<boolean>(false);
     const [userMenuOpen, setUserMenuOpen] = useState<boolean>(false);
     const [loggingOut, setLoggingOut] = useState<boolean>(false);
-
+    const dropdownRef = useRef<HTMLDivElement>(null);
     useEffect(() => {
-        async function fetchUser() {
-            try {
-                const res = await getUserProfile();
-                if (res && typeof res === "object") {
-                    const userData = ("data" in res && res.data) ? (res.data as User) : (res as User);
-                    setUser(userData);
-                }
-            } catch {
-                setUser(null);
+        const handleClickOutside = (event: globalThis.MouseEvent) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setUserMenuOpen(false);
             }
-        }
-        fetchUser();
-    }, []);
-
-    useEffect(() => {
-        if (!userMenuOpen) return;
-        const handler = () => setUserMenuOpen(false);
-        const timer = setTimeout(() => {
-            document.addEventListener("click", handler);
-        }, 0);
-        return () => {
-            clearTimeout(timer);
-            document.removeEventListener("click", handler);
         };
-    }, [userMenuOpen]);
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
 
     const handleLogout = async () => {
         if (loggingOut) return;
@@ -82,8 +62,7 @@ export default function NavbarActions({ navItems, pathname }: NavbarActionsProps
         setUserMenuOpen(false);
         setOpen(false);
         try {
-            await logoutAction();
-            setUser(null);
+            await logout();
         } catch (error) {
             console.error("Logout failed:", error);
         } finally {
@@ -92,18 +71,20 @@ export default function NavbarActions({ navItems, pathname }: NavbarActionsProps
     };
 
     const isLinkActive = (to: string): boolean => {
-        if (to === "/") {
-            return pathname === "/";
-        }
+        if (to === "/") return pathname === "/";
         return pathname.startsWith(to);
     };
 
     return (
         <div className="flex items-center gap-2">
-            {user ? (
+            {hasToken && loading && !user && (
+                <div className="w-9 h-9 rounded-xl bg-slate-200 animate-pulse border border-brand-light" />
+            )}
+
+            {hasToken && user && (
                 <div
+                    ref={dropdownRef}
                     className="relative"
-                    onClick={(e: MouseEvent) => e.stopPropagation()}
                 >
                     <Button
                         onClick={() => setUserMenuOpen((v) => !v)}
@@ -150,7 +131,9 @@ export default function NavbarActions({ navItems, pathname }: NavbarActionsProps
                         </div>
                     )}
                 </div>
-            ) : (
+            )}
+
+            {!hasToken && (
                 <Link
                     href="/login"
                     className="p-2 rounded-lg border border-brand-light hover:bg-brand-light/40 text-brand-navy"
@@ -197,7 +180,7 @@ export default function NavbarActions({ navItems, pathname }: NavbarActionsProps
                                 );
                             })}
 
-                            {user && (
+                            {hasToken && (
                                 <button
                                     type="button"
                                     onClick={(e: MouseEvent<HTMLButtonElement>) => {

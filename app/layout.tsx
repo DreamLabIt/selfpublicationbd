@@ -3,6 +3,8 @@ import { Hind_Siliguri } from "next/font/google";
 import "./globals.css";
 import { I18nProvider } from "@/lib/i18n";
 import { CartProvider } from "@/lib/cart";
+import { AuthProvider } from "@/context/AuthContext";
+import { cookies } from "next/headers";
 import Navbar from "@/components/site/Navbar";
 import Footer from "@/components/site/Footer";
 import { Toaster } from "sonner";
@@ -41,35 +43,41 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const cookieStore = await cookies();
+  const hasToken = Boolean(
+    cookieStore.get("accessToken")?.value || cookieStore.get("refreshToken")?.value
+  );
+
   return (
     <html lang="en" className={hindSiliguri.variable} data-scroll-behavior="smooth">
       <body>
-        <I18nProvider>
-          <CartProvider>
-            <Navbar />
-            <Toaster
-              position="top-right"
-              toastOptions={{
-                className: "font-sans text-sm shadow-xl rounded-xl p-4 border transition-all",
-                classNames: {
-                  success: "!text-[#4ade80] !border-[#22c55e]/30",
-                  error: "!text-[#f87171] !border-[#d61f1f]/40",
-                  warning: "!text-[#fbbf24] !border-[#f59e0b]/30",
-                  info: "!text-[#60a5fa] !border-[#3b82f6]/30",
-                },
-              }}
-            />
-            {children}
-            <Footer />
-          </CartProvider>
-        </I18nProvider>
+        <AuthProvider initialHasToken={hasToken}>
+          <I18nProvider>
+            <CartProvider>
+              <Navbar />
+              <Toaster
+                position="top-right"
+                toastOptions={{
+                  className: "font-sans text-sm shadow-xl rounded-xl p-4 border transition-all",
+                  classNames: {
+                    success: "!text-[#4ade80] !border-[#22c55e]/30",
+                    error: "!text-[#f87171] !border-[#d61f1f]/40",
+                    warning: "!text-[#fbbf24] !border-[#f59e0b]/30",
+                    info: "!text-[#60a5fa] !border-[#3b82f6]/30",
+                  },
+                }}
+              />
+              {children}
+              <Footer />
+            </CartProvider>
+          </I18nProvider>
+        </AuthProvider>
       </body>
     </html>
   );
 }
-
