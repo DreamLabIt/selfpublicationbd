@@ -94,7 +94,7 @@ export default function LoginForm() {
     };
 
     return (
-        <div className="min-h-screen bg-hero-grad flex items-center justify-center px-4 py-10 relative overflow-hidden">
+        <div className="bg-hero-grad flex items-center justify-center px-4 py-10 relative overflow-hidden pt-16">
             <div className="w-full max-w-md z-10">
                 <div className="text-center mb-8">
                     <h1 className="font-display text-3xl font-bold gradient-text-blue tracking-tight">

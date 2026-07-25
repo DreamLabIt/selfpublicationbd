@@ -86,18 +86,19 @@ export default function NavbarActions({ navItems, pathname }: NavbarActionsProps
                     ref={dropdownRef}
                     className="relative"
                 >
-                    <Button
-                        onClick={() => setUserMenuOpen((v) => !v)}
-                        className="flex items-center gap-2 p-1.5 pr-3 rounded-xl border border-brand-light hover:bg-brand-light/40 text-brand-navy transition-colors bg-transparent"
-                    >
-                        <div className="w-7 h-7 rounded-lg bg-[#0B1E8A] text-white flex items-center justify-center text-xs font-bold uppercase">
-                            {user.name?.charAt(0) || "U"}
-                        </div>
-                        <span className="text-sm font-semibold text-brand-navy max-w-22.5 truncate">
-                            {user.name?.split(" ")[0]}
-                        </span>
-                    </Button>
-
+                    <div className="rounded-xl border border-brand-light hover:bg-brand-light/40 text-brand-navy transition-colors bg-transparent">
+                        <Button
+                            onClick={() => setUserMenuOpen((v) => !v)}
+                            className="flex items-center gap-2 rounded-xl"
+                        >
+                            <div className="w-7 h-7 rounded-lg bg-[#0B1E8A] text-white flex items-center justify-center text-xs font-bold uppercase">
+                                {user.name?.charAt(0) || "U"}
+                            </div>
+                            <span className="text-sm font-semibold text-brand-navy max-w-22.5 truncate">
+                                {user.name?.split(" ")[0]}
+                            </span>
+                        </Button>
+                    </div>
                     {userMenuOpen && (
                         <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-2xl shadow-lg border border-brand-light py-1.5 z-50">
                             <div className="px-4 py-2 border-b border-brand-light mb-1">
@@ -142,16 +143,19 @@ export default function NavbarActions({ navItems, pathname }: NavbarActionsProps
                 </Link>
             )}
 
-            <CartDrawer>
-                <button className="relative p-2 rounded-lg border border-brand-light hover:bg-brand-light/40 text-brand-navy">
-                    <ShoppingCartIcon className="w-5 h-5" />
-                    {count > 0 && (
-                        <span className="absolute -top-1.5 -right-1.5 bg-[#D61F1F] text-white text-[10px] font-bold rounded-full min-w-5 h-5 px-1 flex items-center justify-center border-2 border-white shadow-pop">
-                            {count}
-                        </span>
-                    )}
-                </button>
-            </CartDrawer>
+            <div className="rounded-lg border border-brand-light hover:bg-brand-light/40 text-brand-navy">
+                <CartDrawer>
+                    <button className="relative p-2 ">
+                        <ShoppingCartIcon className="w-5 h-5" />
+                        {count > 0 && (
+                            <span className="absolute -top-1.5 -right-1.5 bg-[#D61F1F] text-white text-[10px] font-bold rounded-full min-w-5 h-5 px-1 flex items-center justify-center border-2 border-white shadow-pop">
+                                {count}
+                            </span>
+                        )}
+                    </button>
+                </CartDrawer>
+            </div>
+
 
             <div className="lg:hidden">
                 <SafeSheet open={open} onOpenChange={setOpen}>
