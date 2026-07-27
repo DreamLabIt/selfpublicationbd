@@ -9,8 +9,8 @@ export interface UpdateProfilePayload {
 }
 
 export interface ChangePasswordPayload {
-    current_password?: string;
-    new_password?: string;
+    oldPassword?: string;
+    newPassword?: string;
 }
 
 export interface Subscription {
@@ -28,14 +28,17 @@ export interface Subscription {
 }
 
 export async function updateProfileAction(data: UpdateProfilePayload) {
+
     try {
+
         const res = await fetchWithAuth("/api/v1/user/profile", {
             method: "PUT",
             body: JSON.stringify(data),
         });
 
         const result = await res.json();
-        if (!res.ok) {
+
+        if (!result.success) {
             return { success: false, message: result.message || "প্রোফাইল আপডেট করতে সমস্যা হয়েছে।" };
         }
 
@@ -48,13 +51,13 @@ export async function updateProfileAction(data: UpdateProfilePayload) {
 
 export async function changePasswordAction(data: ChangePasswordPayload) {
     try {
-        const res = await fetchWithAuth("/api/v1/user/change-password", {
-            method: "PUT",
+        const res = await fetchWithAuth("/api/v1/auth/password-change", {
+            method: "POST",
             body: JSON.stringify(data),
         });
 
         const result = await res.json();
-        if (!res.ok) {
+        if (!result.success) {
             return { success: false, message: result.message || "পাসওয়ার্ড পরিবর্তন ব্যর্থ হয়েছে।" };
         }
 
@@ -66,7 +69,7 @@ export async function changePasswordAction(data: ChangePasswordPayload) {
 
 export async function getEbookSubscriptionsAction(): Promise<Subscription[]> {
     try {
-        const res = await fetchWithAuth("/api/v1/user/profile/ebook-subscriptions", {
+        const res = await fetchWithAuth("/api/v1/auth/ebook-subscriptions", {
             method: "GET",
             next: { revalidate: 0 },
         });

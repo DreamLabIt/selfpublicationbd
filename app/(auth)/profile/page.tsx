@@ -34,7 +34,6 @@ export default async function ProfilePage() {
           <p className="text-sm text-slate-500">{user.email}</p>
         </div>
       </div>
-
       <ProfileClient user={user} subscriptions={subscriptions} />
     </div>
   );

@@ -6,7 +6,7 @@ export type RegisterFormData = {
   agreed: boolean;
 };
 export interface LoginFormInputs extends LoginPayload {
-    remember?: boolean;
+  remember?: boolean;
 }
 export type FetchOptions = {
   endpoint: string;
@@ -67,6 +67,28 @@ export interface NavItem {
   to: string;
   key: string;
 }
+
+export interface UserType {
+  name: string;
+  email: string;
+  role: string;
+  phone?: string;
+}
+export interface ProfileFormInputs {
+  name: string;
+  phone: string;
+}
+
+export interface PasswordFormInputs {
+  oldPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
+export interface DeleteAccountInput {
+  confirmText: string;
+}
+
 
 // Category
 export interface Category {
