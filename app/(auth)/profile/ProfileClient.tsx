@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from "react";
+import { useState } from "react";
 import { User, Lock, Trash2, BookOpen, LucideIcon } from "lucide-react";
 import { Subscription } from "@/app/actions/profile";
 import { InfoTab } from "./InfoTab";
@@ -19,6 +19,7 @@ interface TabItem {
   label: string;
   icon: LucideIcon;
 }
+
 const TABS: TabItem[] = [
   { id: "info", label: "Profile Info", icon: User },
   { id: "ebooks", label: "আমার ই-বুক", icon: BookOpen },
@@ -27,23 +28,24 @@ const TABS: TabItem[] = [
 ];
 
 export default function ProfileClient({ user, subscriptions }: ProfileClientProps) {
-  const [tab, setTab] = useState<string>("info");
+  const [tab, setTab] = useState<string>("ebooks");
+
   return (
     <div className="max-w-3xl mx-auto py-6 w-full space-y-6">
-      <div className="flex gap-1 mb-6 bg-slate-100 p-1 rounded-2xl overflow-x-auto scrollbar-none border border-slate-200/60">
+      <div className="flex gap-1 mb-6 bg-slate-100 p-1 rounded-2xl overflow-x-auto scrollbar-none">
         {TABS.map(({ id, label, icon: Icon }) => {
           const isActive = tab === id;
           return (
             <button
               key={id}
               onClick={() => setTab(id)}
-              className={`flex-1 min-w-30 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-sm font-semibold transition-all whitespace-nowrap cursor-pointer ${isActive
-                ? "bg-white text-[#0B1E8A] shadow-sm font-bold"
-                : "text-slate-500 hover:text-[#0B1E8A]"
+              className={`shrink-0 flex items-center justify-center gap-2 py-2.5 px-3 rounded-md text-sm font-semibold transition-all cursor-pointer ${isActive
+                  ? "bg-white! text-[#0B1E8A] shadow-sm font-bold"
+                  : "text-slate-500 hover:text-[#0B1E8A]"
                 }`}
             >
               <Icon className="w-4 h-4 shrink-0" />
-              <span>{label}</span>
+              <span className="hidden sm:inline">{label}</span>
             </button>
           );
         })}
@@ -58,4 +60,3 @@ export default function ProfileClient({ user, subscriptions }: ProfileClientProp
     </div>
   );
 }
-
