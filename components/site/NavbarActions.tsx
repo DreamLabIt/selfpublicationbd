@@ -78,15 +78,15 @@ export default function NavbarActions({ navItems }: NavbarActionsProps) {
     };
 
     return (
-        <div className="flex items-center gap-6 w-full justify-between lg:justify-end">
-            <ul className="hidden lg:flex items-center gap-1 overflow-x-auto">
+        <div className="flex items-center gap-2 sm:gap-4 lg:gap-6 w-full justify-end">
+            <ul className="hidden lg:flex items-center gap-1 xl:gap-2 overflow-x-auto">
                 {navItems.map((it) => {
                     const active = isLinkActive(it.to);
                     return (
                         <li key={it.to}>
                             <Link
                                 href={it.to}
-                                className={`inline-block px-4 py-3 text-sm font-medium transition-colors border-b-2 ${active
+                                className={`inline-block px-3 xl:px-4 py-2.5 text-xs xl:text-sm font-medium transition-colors border-b-2 whitespace-nowrap ${active
                                     ? "text-brand-royal border-[#D61F1F]"
                                     : "text-brand-navy/80 border-transparent hover:text-brand-royal hover:border-brand-royal/40"
                                     }`}
@@ -97,22 +97,23 @@ export default function NavbarActions({ navItems }: NavbarActionsProps) {
                     );
                 })}
             </ul>
-            <div className="flex items-center gap-2">
+
+            <div className="flex items-center gap-1.5 sm:gap-2">
                 {hasToken && loading && !user && (
-                    <div className="w-9 h-9 rounded-xl bg-slate-200 animate-pulse border border-brand-light" />
+                    <div className="hidden sm:block w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-slate-200 animate-pulse border border-brand-light" />
                 )}
 
                 {hasToken && user && (
-                    <div ref={dropdownRef} className="relative">
+                    <div ref={dropdownRef} className="relative hidden sm:block">
                         <div className="rounded-xl border border-brand-light hover:bg-brand-light/40 text-brand-navy transition-colors bg-transparent">
                             <Button
                                 onClick={() => setUserMenuOpen((v) => !v)}
-                                className="flex items-center gap-2 rounded-xl"
+                                className="flex items-center gap-2 rounded-xl p-1.5 sm:px-3 sm:py-2 h-auto"
                             >
-                                <div className="w-7 h-7 rounded-lg bg-[#0B1E8A] text-white flex items-center justify-center text-xs font-bold uppercase">
+                                <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-[#0B1E8A] text-white flex items-center justify-center text-xs font-bold uppercase shrink-0">
                                     {user.name?.charAt(0) || "U"}
                                 </div>
-                                <span className="text-sm font-semibold text-brand-navy max-w-22.5 truncate">
+                                <span className="hidden md:inline-block text-sm font-semibold text-brand-navy max-w-22.5 truncate">
                                     {user.name?.split(" ")[0]}
                                 </span>
                             </Button>
@@ -155,15 +156,15 @@ export default function NavbarActions({ navItems }: NavbarActionsProps) {
                 {!hasToken && (
                     <Link
                         href="/login"
-                        className="p-2 rounded-lg border border-brand-light hover:bg-brand-light/40 text-brand-navy"
+                        className="hidden sm:inline-flex p-2 rounded-lg border border-brand-light hover:bg-brand-light/40 text-brand-navy transition-colors"
                     >
                         <UserIcon className="w-5 h-5" />
                     </Link>
                 )}
 
-                <div className="rounded-lg border border-brand-light hover:bg-brand-light/40 text-brand-navy">
+                <div className="rounded-lg border border-brand-light hover:bg-brand-light/40 text-brand-navy transition-colors">
                     <CartDrawer>
-                        <button className="relative p-2 ">
+                        <button className="relative p-2 flex items-center justify-center">
                             <ShoppingCartIcon className="w-5 h-5" />
                             {count > 0 && (
                                 <span className="absolute -top-1.5 -right-1.5 bg-[#D61F1F] text-white text-[10px] font-bold rounded-full min-w-5 h-5 px-1 flex items-center justify-center border-2 border-white shadow-pop">
@@ -177,13 +178,29 @@ export default function NavbarActions({ navItems }: NavbarActionsProps) {
                 <div className="lg:hidden">
                     <SafeSheet open={open} onOpenChange={setOpen}>
                         <SheetTrigger asChild>
-                            <Button variant="ghost" size="icon" className="text-brand-navy">
+                            <Button variant="ghost" size="icon" className="text-brand-navy h-9 w-9 p-0">
                                 <MenuIcon className="w-6 h-6" />
                             </Button>
                         </SheetTrigger>
 
-                        <SafeSheetContent side="right" className="w-72 font-bn">
-                            <div className="flex flex-col gap-1 mt-8">
+                        <SafeSheetContent side="right" className="w-72 font-bn flex flex-col justify-between h-full p-6">
+                            <div className="flex flex-col gap-1 mt-6">
+                                {hasToken && user && (
+                                    <div className="mb-4 p-3 rounded-xl bg-slate-50 border border-brand-light flex items-center gap-3">
+                                        <div className="w-9 h-9 rounded-lg bg-[#0B1E8A] text-white flex items-center justify-center text-sm font-bold uppercase shrink-0">
+                                            {user.name?.charAt(0) || "U"}
+                                        </div>
+                                        <div className="overflow-hidden">
+                                            <p className="text-sm font-bold text-brand-navy truncate">
+                                                {user.name}
+                                            </p>
+                                            <p className="text-xs text-slate-500 truncate">
+                                                {user.email}
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
+
                                 {navItems.map((it) => {
                                     const active = isLinkActive(it.to);
                                     return (
@@ -191,7 +208,7 @@ export default function NavbarActions({ navItems }: NavbarActionsProps) {
                                             key={it.to}
                                             href={it.to}
                                             onClick={() => setOpen(false)}
-                                            className={`px-3 py-2 rounded-lg transition-colors ${active
+                                            className={`px-3 py-2.5 rounded-lg text-sm transition-colors ${active
                                                 ? "bg-brand-light text-brand-royal font-semibold"
                                                 : "text-brand-navy hover:bg-brand-light/40"
                                                 }`}
@@ -202,6 +219,19 @@ export default function NavbarActions({ navItems }: NavbarActionsProps) {
                                 })}
 
                                 {hasToken && (
+                                    <Link
+                                        href="/profile"
+                                        onClick={() => setOpen(false)}
+                                        className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm text-brand-navy hover:bg-brand-light/40 transition-colors"
+                                    >
+                                        <UserIcon className="w-4 h-4" />
+                                        My Profile
+                                    </Link>
+                                )}
+                            </div>
+
+                            <div className="pt-4 border-t border-brand-light">
+                                {hasToken ? (
                                     <button
                                         type="button"
                                         onClick={(e: MouseEvent<HTMLButtonElement>) => {
@@ -209,11 +239,20 @@ export default function NavbarActions({ navItems }: NavbarActionsProps) {
                                             handleLogout();
                                         }}
                                         disabled={loggingOut}
-                                        className="mt-2 flex items-center gap-2 px-3 py-2 rounded-lg text-[#D61F1F] hover:bg-red-50 text-sm font-medium disabled:opacity-50"
+                                        className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-red-50 text-[#D61F1F] hover:bg-red-100 text-sm font-semibold transition-colors disabled:opacity-50"
                                     >
                                         <LogoutIcon className="w-4 h-4" />
                                         {loggingOut ? "Logging out…" : "Logout"}
                                     </button>
+                                ) : (
+                                    <Link
+                                        href="/login"
+                                        onClick={() => setOpen(false)}
+                                        className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-brand-royal text-white text-sm font-semibold hover:bg-brand-navy transition-colors"
+                                    >
+                                        <UserIcon className="w-4 h-4" />
+                                        Login / Register
+                                    </Link>
                                 )}
                             </div>
                         </SafeSheetContent>
