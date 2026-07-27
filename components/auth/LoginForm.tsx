@@ -78,9 +78,8 @@ export default function LoginForm() {
 
                 const destination = res.redirectUrl || "/profile";
                 setTimeout(() => {
-                    router.push(destination);
-                    router.refresh();
-                }, 500);
+                    window.location.href = destination;
+                }, 0);
             } else {
                 toast.error(res?.message || "Invalid credentials.");
             }
