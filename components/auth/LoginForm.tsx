@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import type { LoginPayload, LoginFormInputs } from "@/types";
 import { loginAction } from "@/app/actions/auth";
@@ -10,7 +9,6 @@ import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
 
 export default function LoginForm() {
-    const router = useRouter();
     const { refetchUser } = useAuth();
     const [loading, setLoading] = useState(false);
     const [showPass, setShowPass] = useState(false);

@@ -1,6 +1,5 @@
 import Link from "next/link";
 import Image from "next/image";
-import { headers } from "next/headers";
 import NavbarActions from "./NavbarActions";
 import WhatsappIcon from "../icons/WhatsappIcon";
 import PackageIcon from "../icons/PackageIcon";
@@ -15,10 +14,7 @@ const navItems = [
     { to: "/offline-store", label: "Offline Store" },
 ] as const;
 
-export default async function Navbar() {
-    const headerList = await headers();
-    const pathname = headerList.get("x-pathname") || "/";
-
+export default function Navbar() {
     return (
         <>
             <div className="bg-[#08145A] text-white text-xs">
@@ -58,30 +54,7 @@ export default async function Navbar() {
                             priority
                         />
                     </Link>
-
-                    <ul className="hidden lg:flex items-center gap-1 overflow-x-auto">
-                        {navItems.map((it) => {
-                            const active = it.to === "/" ? pathname === "/" : pathname.startsWith(it.to);
-                            return (
-                                <li key={it.to}>
-                                    <Link
-                                        href={it.to}
-                                        className={`inline-block px-4 py-3 text-sm font-medium transition-colors border-b-2 ${active
-                                            ? "text-brand-royal border-[#D61F1F]"
-                                            : "text-brand-navy/80 border-transparent hover:text-brand-royal hover:border-brand-royal/40"
-                                            }`}
-                                    >
-                                        {it.label}
-                                    </Link>
-                                </li>
-                            );
-                        })}
-                    </ul>
-
-                    <NavbarActions
-                        navItems={navItems}
-                        pathname={pathname}
-                    />
+                    <NavbarActions navItems={navItems} />
                 </div>
             </div>
         </>
