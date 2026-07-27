@@ -1,53 +1,41 @@
-"use client";
+import { redirect } from "next/navigation";
+import { getUserProfile } from "@/app/actions/auth";
+import { getEbookSubscriptionsAction } from "@/app/actions/profile";
+import ProfileClient from "./ProfileClient";
 
-import { useAuth } from "@/context/AuthContext";
+export default async function ProfilePage() {
+  const userRes = await getUserProfile();
 
-export default function ProfilePage() {
-  const { user, loading, hasToken } = useAuth();
-
-  if (loading) {
-    return <div>Loading...</div>;
+  if (!userRes || !userRes.success || !userRes.data) {
+    redirect("/login");
   }
 
-  if (!hasToken) {
-    return <div>Please login first.</div>;
+  const user = userRes.data as {
+    name: string;
+    email: string;
+    role: string;
+    phone?: string;
+  };
+
+  if (user.role !== "customer") {
+    redirect("/admin");
   }
 
-  if (!user) {
-    return <div>User data not found.</div>;
-  }
+  const subscriptions = await getEbookSubscriptionsAction();
 
   return (
-    <div className="max-w-2xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-6">My Profile</h1>
-
-      <div className="space-y-3 rounded-lg border p-5">
-        <p>
-          <strong>Name:</strong> {user.name || "N/A"}
-        </p>
-
-        <p>
-          <strong>Email:</strong> {user.email || "N/A"}
-        </p>
-
-        {"phone" in user && (
-          <p>
-            <strong>Phone:</strong> {String(user.phone)}
-          </p>
-        )}
-
-        {"role" in user && (
-          <p>
-            <strong>Role:</strong> {String(user.role)}
-          </p>
-        )}
-
-        {"address" in user && (
-          <p>
-            <strong>Address:</strong> {String(user.address)}
-          </p>
-        )}
+    <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      <div className="flex items-center gap-4 mb-8">
+        <div className="w-14 h-14 rounded-2xl bg-[#0B1E8A] text-white flex items-center justify-center text-2xl font-bold uppercase shadow-md">
+          {user.name?.charAt(0)}
+        </div>
+        <div>
+          <h1 className="text-2xl font-bold text-[#08145A]">{user.name}</h1>
+          <p className="text-sm text-slate-500">{user.email}</p>
+        </div>
       </div>
+
+      <ProfileClient user={user} subscriptions={subscriptions} />
     </div>
   );
 }

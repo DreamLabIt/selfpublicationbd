@@ -6,7 +6,8 @@ import { useCart } from "@/lib/cart";
 import { useI18n } from "@/lib/i18n";
 import { BACKEND_URL } from "@/utils/api";
 import Image from "next/image";
-import useAuth from "@/hooks/useAuth";
+import { useAuth } from '@/context/AuthContext';
+
 
 
 

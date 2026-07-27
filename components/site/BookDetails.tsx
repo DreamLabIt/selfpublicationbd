@@ -5,7 +5,8 @@ import toast from "react-hot-toast";
 import { BACKEND_URL } from "@/utils/api";
 import { useCart } from "@/lib/cart";
 import { useI18n } from "@/lib/i18n";
-import useAuth from "@/hooks/useAuth";
+import { useAuth } from '@/context/AuthContext';
+
 import Gallery from "./Gallery";
 import BookCard from "@/components/site/BookCard";
 import ShareButtons from "@/components/site/ShareButtons";
