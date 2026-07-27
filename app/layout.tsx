@@ -8,6 +8,7 @@ import { cookies } from "next/headers";
 import Navbar from "@/components/site/Navbar";
 import Footer from "@/components/site/Footer";
 import { Toaster } from "sonner";
+import RefreshTokenProvider from "@/components/providers/RefreshTokenProvider";
 
 const hindSiliguri = Hind_Siliguri({
   subsets: ["bengali", "latin"],
@@ -57,25 +58,27 @@ export default async function RootLayout({
     <html lang="en" className={hindSiliguri.variable} data-scroll-behavior="smooth">
       <body>
         <AuthProvider initialHasToken={hasToken}>
-          <I18nProvider>
-            <CartProvider>
-              <Navbar />
-              <Toaster
-                position="top-right"
-                toastOptions={{
-                  className: "font-sans text-sm shadow-xl rounded-xl p-4 border transition-all",
-                  classNames: {
-                    success: "!text-[#4ade80] !border-[#22c55e]/30",
-                    error: "!text-[#f87171] !border-[#d61f1f]/40",
-                    warning: "!text-[#fbbf24] !border-[#f59e0b]/30",
-                    info: "!text-[#60a5fa] !border-[#3b82f6]/30",
-                  },
-                }}
-              />
-              {children}
-              <Footer />
-            </CartProvider>
-          </I18nProvider>
+          <RefreshTokenProvider>
+            <I18nProvider>
+              <CartProvider>
+                <Navbar />
+                <Toaster
+                  position="top-right"
+                  toastOptions={{
+                    className: "font-sans text-sm shadow-xl rounded-xl p-4 border transition-all",
+                    classNames: {
+                      success: "!text-[#4ade80] !border-[#22c55e]/30",
+                      error: "!text-[#f87171] !border-[#d61f1f]/40",
+                      warning: "!text-[#fbbf24] !border-[#f59e0b]/30",
+                      info: "!text-[#60a5fa] !border-[#3b82f6]/30",
+                    },
+                  }}
+                />
+                {children}
+                <Footer />
+              </CartProvider>
+            </I18nProvider>
+          </RefreshTokenProvider>
         </AuthProvider>
       </body>
     </html>
