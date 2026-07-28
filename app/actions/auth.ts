@@ -124,7 +124,7 @@ export async function loginAction(payload: LoginPayload) {
         let redirectUrl = "/profile";
 
         if (role === "admin") {
-            redirectUrl = "/admin/dashboard";
+            redirectUrl = "/admin";
         } else if (role === "customer" || role === "user") {
             redirectUrl = "/profile";
         }
