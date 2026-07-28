@@ -6,12 +6,14 @@ import { getUserProfile, logoutAction } from "@/app/actions/auth";
 export type User = {
     name?: string;
     email?: string;
+    role?: string;
     [key: string]: unknown;
 };
 
 interface AuthContextType {
     hasToken: boolean;
     user: User | null;
+    admin: User | null;
     loading: boolean;
     logout: () => Promise<void>;
     refetchUser: () => Promise<void>;
@@ -20,6 +22,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType>({
     hasToken: false,
     user: null,
+    admin: null,
     loading: true,
     logout: async () => { },
     refetchUser: async () => { },
@@ -77,19 +80,22 @@ export function AuthProvider({
 
     const logout = async () => {
         try {
-            await logoutAction();
             setUser(null);
             setHasToken(false);
+            await logoutAction();
         } catch (error) {
             console.error("Logout failed:", error);
         }
     };
+
+    const admin = user?.role?.toLowerCase() === "admin" ? user : null;
 
     return (
         <AuthContext.Provider
             value={{
                 hasToken,
                 user,
+                admin,
                 loading,
                 logout,
                 refetchUser: fetchUser,

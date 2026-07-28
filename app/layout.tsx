@@ -9,6 +9,7 @@ import Navbar from "@/components/site/Navbar";
 import Footer from "@/components/site/Footer";
 import { Toaster } from "sonner";
 import RefreshTokenProvider from "@/components/providers/RefreshTokenProvider";
+import LayoutWrapper from "@/components/site/LayoutWrapper";
 
 const hindSiliguri = Hind_Siliguri({
   subsets: ["bengali", "latin"],
@@ -61,7 +62,6 @@ export default async function RootLayout({
           <RefreshTokenProvider>
             <I18nProvider>
               <CartProvider>
-                <Navbar />
                 <Toaster
                   position="top-right"
                   toastOptions={{
@@ -74,8 +74,9 @@ export default async function RootLayout({
                     },
                   }}
                 />
-                {children}
-                <Footer />
+                <LayoutWrapper>
+                  {children}
+                </LayoutWrapper>
               </CartProvider>
             </I18nProvider>
           </RefreshTokenProvider>
