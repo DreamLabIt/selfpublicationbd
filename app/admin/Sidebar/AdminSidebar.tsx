@@ -35,7 +35,7 @@ const links: NavLinkItem[] = [
   { to: "/admin/books", label: "Books", icon: BookOpen },
   { to: "/admin/categories", label: "Categories", icon: Tags },
   { to: "/admin/orders", label: "Orders", icon: ShoppingBag },
-  { to: "/admin/visitor", label: "Visitor", icon: Eye },
+  { to: "/admin/visitor", label: "Visitors", icon: Eye },
   { to: "/admin/payments", label: "Payments", icon: CircleDollarSign },
   { to: "/admin/libraries", label: "Libraries", icon: Library },
   { to: "/admin/job-circulars", label: "Job Circulars", icon: Briefcase },
@@ -69,7 +69,7 @@ export default function AdminSidebar({ onLogout, userDisplayName }: AdminSidebar
           }`}
       >
         <div className="p-5 flex items-center gap-2 border-b border-white/10">
-          <div className="w-9 h-9 rounded-xl bg-white text-brand-navy grid place-items-center font-bold">
+          <div className="w-9 h-9 rounded-lg bg-white text-brand-navy grid place-items-center font-bold">
             SP
           </div>
           <div className="text-sm font-bold text-white">Self Preparation</div>
