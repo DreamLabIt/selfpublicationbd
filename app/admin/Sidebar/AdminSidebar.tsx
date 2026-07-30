@@ -19,6 +19,7 @@ import {
   Library,
   Menu,
   LucideIcon,
+  Eye,
 } from "lucide-react";
 
 interface NavLinkItem {
@@ -34,6 +35,7 @@ const links: NavLinkItem[] = [
   { to: "/admin/books", label: "Books", icon: BookOpen },
   { to: "/admin/categories", label: "Categories", icon: Tags },
   { to: "/admin/orders", label: "Orders", icon: ShoppingBag },
+  { to: "/admin/visitor", label: "Visitor", icon: Eye },
   { to: "/admin/payments", label: "Payments", icon: CircleDollarSign },
   { to: "/admin/libraries", label: "Libraries", icon: Library },
   { to: "/admin/job-circulars", label: "Job Circulars", icon: Briefcase },

@@ -54,7 +54,7 @@ export async function fetchWithAuth(endpoint: string, options: RequestInit = {})
         ...(API_KEY ? { 'x-api-key': API_KEY } : {}),
         ...customHeaders,
     };
-    // console.log(cookieHeader)
+    console.log(cookieHeader)
     if (!isFormData && !headers['Content-Type']) {
         headers['Content-Type'] = 'application/json';
     } else if (isFormData) {
