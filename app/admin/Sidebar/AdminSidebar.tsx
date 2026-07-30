@@ -40,7 +40,7 @@ const links: NavLinkItem[] = [
   { to: "/admin/libraries", label: "Libraries", icon: Library },
   { to: "/admin/job-circulars", label: "Job Circulars", icon: Briefcase },
   { to: "/admin/winners", label: "Winners", icon: Trophy },
-  { to: "/admin/blog", label: "Blog", icon: Newspaper },
+  { to: "/admin/blogs", label: "Blog", icon: Newspaper },
   { to: "/admin/newsletter", label: "Newsletter", icon: Mail },
   { to: "/admin/settings", label: "Settings", icon: Settings },
 ];
