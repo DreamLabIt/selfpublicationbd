@@ -31,9 +31,7 @@ export async function POST(req: NextRequest) {
             revalidated: tags,
             timestamp: new Date().toISOString(),
         });
-    } catch (error) {
-        console.error("Revalidate Error:", error);
-
+    } catch  {
         return NextResponse.json({
             success: false,
             message: "Internal Server Error",

@@ -45,24 +45,30 @@ export default function HeroSlider({ slides = [] }: { slides: HeroSliderItem[] }
           >
             {sortedSlides.map((item, index) => {
               let slideImage = "";
+
               if (item.image.startsWith("http://") || item.image.startsWith("https://")) {
                 slideImage = item.image;
               } else {
                 const baseUrl = BACKEND_URL.endsWith("/") ? BACKEND_URL.slice(0, -1) : BACKEND_URL;
                 const cleanImagePath = item.image.startsWith("/") ? item.image : `/${item.image}`;
-                slideImage = `${baseUrl}${cleanImagePath}`;
+
+                if (baseUrl.includes("/api/v1")) {
+                  slideImage = `${baseUrl}${cleanImagePath}`;
+                } else {
+                  slideImage = `${baseUrl}/api/v1${cleanImagePath}`;
+                }
               }
 
               return (
-                <SwiperSlide key={`${item.id || index}`}>
+                <SwiperSlide key={item.id || index}>
                   <div className="relative w-full aspect-16/7 md:aspect-16/8 lg:aspect-16/6 bg-gray-100">
                     <Image
                       src={slideImage}
-                      alt={"slider image"}
+                      alt="Hero slider banner"
                       fill
                       priority={index === 0}
+                      unoptimized
                       sizes="(max-width: 1280px) 100vw, 1200px"
-                      className="object-fill lg:object-cover"
                     />
                   </div>
                 </SwiperSlide>

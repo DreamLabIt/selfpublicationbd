@@ -42,14 +42,13 @@ export default function HeroSliderClient({ initialSliders }: Props) {
     const [open, setOpen] = useState(false);
     const [editId, setEditId] = useState<string | null>(null);
     const [busy, setBusy] = useState(false);
-    const [uploading, setUploading] = useState(false);
-
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const {
         register,
         handleSubmit,
         reset,
         setValue,
-        getValues,
         formState: { errors },
         control,
     } = useForm<BannerPayload>({
@@ -57,13 +56,19 @@ export default function HeroSliderClient({ initialSliders }: Props) {
     });
 
     const watchImage = useWatch({ control, name: "image" });
-
+    const resetFormAndFiles = () => {
+        reset(emptyBanner);
+        setSelectedFile(null);
+        if (previewUrl && previewUrl.startsWith("blob:")) {
+            URL.revokeObjectURL(previewUrl);
+        }
+        setPreviewUrl(null);
+    };
     const openNew = () => {
         setEditId(null);
-        reset(emptyBanner);
+        resetFormAndFiles();
         setOpen(true);
     };
-
     const openEdit = (item: Banner) => {
         const id = item._id || item.id || null;
         if (!id) {
@@ -77,8 +82,10 @@ export default function HeroSliderClient({ initialSliders }: Props) {
                 : typeof item.isActive === "boolean"
                     ? item.isActive
                     : true;
-
         setEditId(id);
+        setSelectedFile(null);
+        setPreviewUrl(null);
+
         reset({
             image: item.image || "",
             order: item.order && item.order > 0 ? item.order : 1,
@@ -87,56 +94,53 @@ export default function HeroSliderClient({ initialSliders }: Props) {
         setOpen(true);
     };
 
-    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
-
-        const formData = new FormData();
-        formData.append("image", file);
-
-        const currentOrderNum = Number(getValues("order"));
-        const validOrder = !isNaN(currentOrderNum) && currentOrderNum > 0 ? currentOrderNum : 1;
-
-        formData.append("order", String(validOrder));
-        formData.append("isActive", "true");
-
-        try {
-            setUploading(true);
-            const res = await uploadBannerImageAction(formData);
-
-            if (res.success && res.data?.url) {
-                const uploadedUrl = res.data.url;
-
-                setValue("image", uploadedUrl, {
-                    shouldValidate: true,
-                    shouldDirty: true,
-                    shouldTouch: true
-                });
-
-                toast.success(res.message || "ছবি সফলভাবে আপলোড হয়েছে!");
-            } else {
-                toast.error(res.message || "ছবি আপলোড করতে ব্যর্থ হয়েছে!");
-            }
-        } catch (error) {
-            console.error("Client Upload Exception:", error);
-            toast.error("আপলোড করার সময় সমস্যা হয়েছে!");
-        } finally {
-            setUploading(false);
+        setSelectedFile(file);
+        setValue("image", file.name);
+        if (previewUrl && previewUrl.startsWith("blob:")) {
+            URL.revokeObjectURL(previewUrl);
         }
+        const localUrl = URL.createObjectURL(file);
+        setPreviewUrl(localUrl);
     };
 
     const onSubmit = async (data: BannerPayload) => {
         setBusy(true);
-
-        const parsedOrder = typeof data.order === "number" && !isNaN(data.order) && data.order > 0 ? data.order : 1;
-
-        const payload = {
-            image: data.image,
-            order: parsedOrder,
-            isActive: Boolean(data.is_active),
-        };
-
         try {
+            let finalImageUrl = data.image;
+            if (selectedFile) {
+                const formData = new FormData();
+                formData.append("image", selectedFile);
+                const currentOrderNum = Number(data.order);
+                const validOrder = !isNaN(currentOrderNum) && currentOrderNum > 0 ? currentOrderNum : 1;
+                formData.append("order", String(validOrder));
+                formData.append("isActive", String(Boolean(data.is_active)));
+                const uploadRes = await uploadBannerImageAction(formData);
+                if (uploadRes.success && uploadRes.data?.url) {
+                    finalImageUrl = uploadRes.data.url;
+                } else {
+                    toast.error(uploadRes.message || "ছবি আপলোড করতে ব্যর্থ হয়েছে!");
+                    setBusy(false);
+                    return;
+                }
+            }
+            if (!finalImageUrl || finalImageUrl.trim() === "") {
+                toast.error("অনুগ্রহ করে একটি ছবি সিলেক্ট করুন অথবা Image URL দিন!");
+                setBusy(false);
+                return;
+            }
+
+            const parsedOrder = typeof data.order === "number" && !isNaN(data.order) && data.order > 0 ? data.order : 1;
+
+            const payload = {
+                image: finalImageUrl,
+                order: parsedOrder,
+                isActive: Boolean(data.is_active),
+            };
+
+            // Edit Mode vs Create Mode
             if (editId) {
                 const res = await updateBannerAction(editId, payload);
                 if (res.success) {
@@ -155,21 +159,33 @@ export default function HeroSliderClient({ initialSliders }: Props) {
                         })
                     );
                     setOpen(false);
+                    resetFormAndFiles();
                 } else {
                     toast.error(res.message);
                 }
             } else {
-                const res = await createBannerAction(payload);
-                if (res.success) {
-                    toast.success(res.message);
-                    if (res.data) {
-                        setSliders((prev) => [...prev, res.data!]);
-                    }
+                if (selectedFile) {
+                    toast.success("ব্যানার সফলভাবে তৈরি হয়েছে!");
                     setOpen(false);
+                    resetFormAndFiles();
+                    window.location.reload();
                 } else {
-                    toast.error(res.message);
+                    const res = await createBannerAction(payload);
+                    if (res.success) {
+                        toast.success(res.message);
+                        if (res.data) {
+                            setSliders((prev) => [...prev, res.data!]);
+                        }
+                        setOpen(false);
+                        resetFormAndFiles();
+                    } else {
+                        toast.error(res.message);
+                    }
                 }
             }
+        } catch (error) {
+            console.error("Submit error:", error);
+            toast.error("সেভ করার সময় সমস্যা হয়েছে!");
         } finally {
             setBusy(false);
         }
@@ -200,9 +216,9 @@ export default function HeroSliderClient({ initialSliders }: Props) {
 
     const fullUrl = (u?: string) => {
         if (!u) return "";
-        if (u.startsWith("http://") || u.startsWith("https://")) return u;
+        if (u.startsWith("blob:") || u.startsWith("http://") || u.startsWith("https://")) return u;
 
-        const baseUrl = (BACKEND_URL);
+        const baseUrl = BACKEND_URL;
         const cleanPath = u.replace(/^\//, "");
 
         if (cleanPath.startsWith("api/v1/")) {
@@ -211,6 +227,8 @@ export default function HeroSliderClient({ initialSliders }: Props) {
 
         return `${baseUrl}/api/v1/${cleanPath}`;
     };
+
+    const displayImage = previewUrl || watchImage;
 
     return (
         <div>
@@ -225,7 +243,7 @@ export default function HeroSliderClient({ initialSliders }: Props) {
                 <div className="bg-black text-white px-3 sm:px-4 py-2 rounded-lg">
                     <button
                         onClick={openNew}
-                        className="flex items-center gap-2 text-sm"
+                        className="flex items-center gap-2 text-sm cursor-pointer"
                     >
                         <Plus className="w-4 h-4" />
                         Add Slider
@@ -269,7 +287,7 @@ export default function HeroSliderClient({ initialSliders }: Props) {
                                                     width={80}
                                                     height={48}
                                                     unoptimized
-                                                    className="w-16 sm:w-20 h-10 sm:h-12 object-cover rounded"
+                                                    className="w-16 sm:w-20 h-10 sm:h-12 rounded"
                                                 />
                                             ) : (
                                                 <div className="w-16 sm:w-20 h-10 sm:h-12 bg-gray-100 flex items-center justify-center rounded">
@@ -277,9 +295,7 @@ export default function HeroSliderClient({ initialSliders }: Props) {
                                                 </div>
                                             )}
                                         </td>
-
                                         <td className="px-4 py-3">{s.order}</td>
-
                                         <td className="px-4 py-3 text-xs sm:text-sm">
                                             {isActive ? (
                                                 <span className="text-green-600 font-medium">Active</span>
@@ -311,7 +327,10 @@ export default function HeroSliderClient({ initialSliders }: Props) {
                 </table>
             </div>
 
-            <Dialog open={open} onOpenChange={setOpen}>
+            <Dialog open={open} onOpenChange={(v) => {
+                setOpen(v);
+                if (!v) resetFormAndFiles();
+            }}>
                 <DialogContent className="max-w-lg w-[95vw] sm:w-full z-50">
                     <DialogHeader>
                         <DialogTitle>
@@ -329,26 +348,19 @@ export default function HeroSliderClient({ initialSliders }: Props) {
                                 <input
                                     type="file"
                                     accept="image/*"
-                                    onChange={handleImageUpload}
-                                    disabled={uploading}
-                                    className="block w-full text-sm file:mr-2 file:rounded file:bg-gray-200 file:px-1 file:text-black file:cursor-pointer file:border hover:file:bg-gray-30"
+                                    onChange={handleFileSelect}
+                                    disabled={busy}
+                                    className="block w-full text-sm file:mr-2 file:rounded file:bg-gray-200 file:px-1 file:text-black file:cursor-pointer file:border hover:file:bg-gray-300"
                                 />
-
-                                {uploading && (
-                                    <span className="text-xs text-gray-500 flex items-center gap-1">
-                                        <Loader2 className="w-3 h-3 animate-spin" /> Uploading...
-                                    </span>
-                                )}
                             </div>
 
-                            {watchImage && (
+                            {displayImage && (
                                 <Image
-                                    src={fullUrl(watchImage)}
+                                    src={fullUrl(displayImage)}
                                     alt="Preview"
                                     width={800}
                                     height={320}
-                                    unoptimized
-                                    className="w-full h-32 sm:h-40 object-cover rounded mt-2 border"
+                                    className="w-full h-32 sm:h-40 rounded mt-2 border object-cover"
                                 />
                             )}
                         </div>
@@ -359,6 +371,7 @@ export default function HeroSliderClient({ initialSliders }: Props) {
                             </label>
                             <input
                                 {...register("image")}
+                                placeholder="paste image URL"
                                 className="w-full border border-gray-300 px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-black"
                             />
                             {errors.image && (
@@ -394,10 +407,14 @@ export default function HeroSliderClient({ initialSliders }: Props) {
                         </label>
 
                         <div className="flex justify-end gap-2 pt-2">
+
                             <div className="px-4 py-2 border rounded-lg text-sm hover:bg-gray-50 cursor-pointer border-gray-300">
                                 <button
                                     type="button"
-                                    onClick={() => setOpen(false)}
+                                    onClick={() => {
+                                        setOpen(false);
+                                        resetFormAndFiles();
+                                    }}
                                 >
                                     Cancel
                                 </button>
@@ -406,7 +423,7 @@ export default function HeroSliderClient({ initialSliders }: Props) {
                             <div className="bg-black text-white px-4 py-2 rounded-lg text-sm">
                                 <button
                                     type="submit"
-                                    disabled={busy || uploading}
+                                    disabled={busy}
                                     className="flex items-center gap-2"
                                 >
                                     {busy && <Loader2 className="w-4 h-4 animate-spin" />}
