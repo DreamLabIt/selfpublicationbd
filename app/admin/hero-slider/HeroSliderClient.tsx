@@ -407,7 +407,6 @@ export default function HeroSliderClient({ initialSliders }: Props) {
                         </label>
 
                         <div className="flex justify-end gap-2 pt-2">
-
                             <div className="px-4 py-2 border rounded-lg text-sm hover:bg-gray-50 cursor-pointer border-gray-300">
                                 <button
                                     type="button"

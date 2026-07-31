@@ -23,13 +23,13 @@ const PUBLIC_BLOG_PATH = "/blog";
 
 function clearBlogCache() {
     try {
-        // Revalidate Pages
-        revalidatePath(ADMIN_BLOG_PATH, "page");
-        revalidatePath(PUBLIC_BLOG_PATH, "page");
-
-
-    } catch (error) {
-        console.error("Cache revalidation error:", error);
+        revalidatePath(ADMIN_BLOG_PATH);
+        revalidatePath(PUBLIC_BLOG_PATH);
+    } catch {
+        return {
+            success: false,
+            message: "Error clearing cache:",
+        };
     }
 }
 
@@ -42,12 +42,10 @@ export async function getAllBlogsAdminAction(): Promise<{
     try {
         const res = await fetchWithAuth("/api/v1/blog/admin", {
             method: "GET",
-            cache: "no-store",
             next: { revalidate: 0 },
         });
 
         const result = await res.json();
-
         if (!res.ok) {
             return {
                 success: false,
@@ -63,7 +61,6 @@ export async function getAllBlogsAdminAction(): Promise<{
             (Array.isArray(result?.blogs) && result.blogs) ||
             [];
 
-        // Normalize _id to id so client receives stable identifiers
         const normalizedBlogs = blogsData.map((b: Blog) => ({
             ...b,
             id: b.id || b._id,
@@ -73,8 +70,7 @@ export async function getAllBlogsAdminAction(): Promise<{
             success: true,
             data: normalizedBlogs,
         };
-    } catch (error) {
-        console.error("Error fetching admin blogs:", error);
+    } catch {
         return {
             success: false,
             data: [],
@@ -92,7 +88,7 @@ export async function getPublicBlogsAction(): Promise<{
     try {
         const res = await fetch(`${BACKEND_URL}/api/v1/blog/public`, {
             method: "GET",
-            next: { revalidate: 0, tags: ["public-blogs"] },
+            next: { revalidate: 0, },
             headers: {
                 "Content-Type": "application/json",
                 ...(API_KEY && { "x-api-key": API_KEY }),
@@ -120,8 +116,7 @@ export async function getPublicBlogsAction(): Promise<{
             success: true,
             data: blogsData,
         };
-    } catch (error) {
-        console.error("Error fetching public blogs:", error);
+    } catch {
         return {
             success: false,
             data: [],
@@ -139,7 +134,6 @@ export async function getBlogBySlugAction(slug: string): Promise<{
     try {
         const res = await fetch(`${BACKEND_URL}/api/v1/blog/${slug}`, {
             method: "GET",
-            cache: "no-store",
             headers: {
                 "Content-Type": "application/json",
                 ...(API_KEY && { "x-api-key": API_KEY }),
@@ -162,8 +156,7 @@ export async function getBlogBySlugAction(slug: string): Promise<{
             success: true,
             data: blog || null,
         };
-    } catch (error) {
-        console.error("Error fetching blog details:", error);
+    } catch {
         return {
             success: false,
             data: null,
@@ -194,8 +187,7 @@ export async function createBlogAction(formData: FormData): Promise<{
 
         clearBlogCache();
         return { success: true, message: result.message || "Blog created successfully" };
-    } catch (error) {
-        console.error("Error creating blog:", error);
+    } catch {
         return {
             success: false,
             message: "Server error occurred while creating blog",
@@ -222,6 +214,7 @@ export async function updateBlogAction(
         });
 
         const result = await res.json();
+        console.log("updateBlogAction", result);
 
         if (!res.ok) {
             return {
@@ -232,8 +225,7 @@ export async function updateBlogAction(
 
         clearBlogCache();
         return { success: true, message: result.message || "Blog updated successfully" };
-    } catch (error) {
-        console.error("Error updating blog:", error);
+    } catch {
         return {
             success: false,
             message: "Server error occurred while updating blog",
@@ -266,8 +258,7 @@ export async function deleteBlogAction(id: string | number): Promise<{
 
         clearBlogCache();
         return { success: true, message: result.message || "Blog deleted successfully" };
-    } catch (error) {
-        console.error("Error deleting blog:", error);
+    } catch {
         return {
             success: false,
             message: "Server error occurred while deleting blog",

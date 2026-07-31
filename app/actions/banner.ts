@@ -56,7 +56,6 @@ export async function getPublicBannersAction(): Promise<Banner[]> {
     try {
         const res = await fetch(`${BACKEND_URL}/api/v1/banner/public`, {
             method: "GET",
-            cache: "no-store",
             next: { revalidate: 0, tags: ["public-banners"] },
             headers: {
                 'Content-Type': 'application/json',

@@ -7,11 +7,12 @@ export const metadata: Metadata = {
 };
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export default async function AdminBlogsPage() {
   const res = await getAllBlogsAdminAction();
   const blogsData = res.data;
-  console.log("blogsData", blogsData);
+  // console.log("blogsData", blogsData);
 
   return (
     <AdminBlogsClient
