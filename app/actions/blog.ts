@@ -5,6 +5,7 @@ import { fetchWithAuth } from "@/lib/fetchWithAuth";
 import { API_KEY, BACKEND_URL } from "@/utils/api";
 
 export interface Blog {
+    description: string | undefined;
     image(image: unknown): string | import("next/dist/shared/lib/get-img-props").StaticImport;
     id?: string | number;
     _id?: string | number;
@@ -215,7 +216,8 @@ export async function updateBlogAction(
 
         const result = await res.json();
         console.log("updateBlogAction", result);
-
+        console.log("slug =>", formData.get("slug"));
+        console.log([...formData.entries()]);
         if (!res.ok) {
             return {
                 success: false,
