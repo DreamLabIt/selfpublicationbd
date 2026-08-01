@@ -21,22 +21,32 @@ export interface Blog {
 
 const ADMIN_BLOG_PATH = "/admin/blogs";
 const PUBLIC_BLOG_PATH = "/blog";
-const BLOG_TAG = "blog";
 
-function clearBlogCache(slug?: string) {
+// Cache Tags
+const BLOGS_COLLECTION_TAG = "blogs";
+const getSingleBlogSlugTag = (slug: string) => `blog:${slug}`;
+const getSingleBlogIdTag = (id: string | number) => `blog:${id}`;
+
+function clearBlogCache(slug?: string, blogId?: string | number) {
     try {
         revalidatePath(ADMIN_BLOG_PATH);
         revalidatePath(PUBLIC_BLOG_PATH);
+
         if (slug) {
             revalidatePath(`/blog/${slug}`);
+            revalidateTag(getSingleBlogSlugTag(slug), "default");
         }
-        revalidateTag(BLOG_TAG, "default");
+
+        if (blogId) {
+            revalidateTag(getSingleBlogIdTag(blogId), "default");
+        }
+        revalidateTag(BLOGS_COLLECTION_TAG, "default");
     } catch (error) {
         console.error("Error clearing blog cache:", error);
     }
 }
 
-// 1. GET ALL BLOGS 
+// 1. GET ALL BLOGS (ADMIN)
 export async function getAllBlogsAdminAction(): Promise<{
     success: boolean;
     data: Blog[];
@@ -91,7 +101,7 @@ export async function getPublicBlogsAction(): Promise<{
     try {
         const res = await fetch(`${BACKEND_URL}/api/v1/blog/public`, {
             method: "GET",
-            next: { tags: [BLOG_TAG] },
+            next: { tags: [BLOGS_COLLECTION_TAG] },
             headers: {
                 "Content-Type": "application/json",
                 ...(API_KEY && { "x-api-key": API_KEY }),
@@ -137,7 +147,7 @@ export async function getBlogBySlugAction(slug: string): Promise<{
     try {
         const res = await fetch(`${BACKEND_URL}/api/v1/blog/${slug}`, {
             method: "GET",
-            next: { tags: [BLOG_TAG, `blog-${slug}`] },
+            next: { tags: [BLOGS_COLLECTION_TAG, getSingleBlogSlugTag(slug)] },
             headers: {
                 "Content-Type": "application/json",
                 ...(API_KEY && { "x-api-key": API_KEY }),
@@ -231,7 +241,7 @@ export async function updateBlogAction(
             result?.data?.slug ||
             result?.blog?.slug;
 
-        clearBlogCache(slug);
+        clearBlogCache(slug, id);
 
         return { success: true, message: result.message || "Blog updated successfully" };
     } catch {
@@ -265,7 +275,7 @@ export async function deleteBlogAction(id: string | number): Promise<{
             };
         }
 
-        clearBlogCache();
+        clearBlogCache(undefined, id);
         return { success: true, message: result.message || "Blog deleted successfully" };
     } catch {
         return {
