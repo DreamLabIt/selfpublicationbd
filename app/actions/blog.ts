@@ -5,16 +5,17 @@ import { fetchWithAuth } from "@/lib/fetchWithAuth";
 import { API_KEY, BACKEND_URL } from "@/utils/api";
 
 export interface Blog {
-    image: string | undefined;
     id?: string | number;
     _id?: string | number;
     title: string;
     slug: string;
-    excerpt?: string;
-    content?: string;
-    description?: string;
+    image?: string;
     cover_image?: string;
+    description?: string;
+    content?: string;
     category?: string;
+    author?: string;
+    views?: number;
     createdAt?: string;
     updatedAt?: string;
 }
@@ -123,7 +124,6 @@ export async function getPublicBlogsAction(): Promise<{
             (Array.isArray(result?.data?.blogs) && result.data.blogs) ||
             (Array.isArray(result?.blogs) && result.blogs) ||
             [];
-        console.log("Public Blogs Response:", blogsData);
 
         return {
             success: true,

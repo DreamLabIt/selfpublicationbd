@@ -8,6 +8,25 @@ import Description from "@/components/site/Description";
 import { PageProps } from "@/types";
 import { getBlogBySlugAction } from "@/app/actions/blog";
 
+export interface BlogData {
+  _id: string;
+  image?: string;
+  cover_image?: string;
+  title: string;
+  description?: string;
+  content?: string;
+  category?: string;
+  author?: string;
+  views?: number;
+}
+
+export interface BlogResponse {
+  data: BlogData;
+}
+
+const stripHtml = (html: string = "") => {
+  return html.replace(/<[^>]*>?/gm, "").replace(/&nbsp;/g, " ").trim();
+};
 
 const getImageUrl = (imagePath?: string) => {
   if (!imagePath) return "";
@@ -29,32 +48,36 @@ const getImageUrl = (imagePath?: string) => {
   return `${baseUrl}/api/v1/${cleanPath}`;
 };
 
-
 export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
   const { id } = await params;
 
   const res = await getBlogBySlugAction(id);
-  const blog = res.data;
+  const blog = res?.data as BlogResponse | BlogData | undefined;
+  const blogData: BlogData | undefined =
+    blog && "data" in blog && blog.data ? blog.data : (blog as BlogData);
 
-  if (!res.success || !blog) {
+  if (!res?.success || !blogData || !blogData.title) {
     return {
       title: "Blog Not Found",
     };
   }
 
-  const rawImage = blog?.image || blog?.cover_image;
-  const rawDescription = blog?.description || blog?.excerpt || blog?.content || "";
-  const fullImageUrl = getImageUrl(typeof rawImage === "string" ? rawImage : undefined);
+  const rawImage = blogData.image || blogData.cover_image;
+  const rawDescription = blogData.description || blogData.content || "";
+  const cleanDescription = stripHtml(rawDescription).slice(0, 160);
+  const fullImageUrl = getImageUrl(
+    typeof rawImage === "string" ? rawImage : undefined
+  );
 
   return {
-    title: blog.title,
-    description: rawDescription,
+    title: blogData.title,
+    description: cleanDescription,
     openGraph: {
-      title: blog.title,
-      description: rawDescription,
-      images: fullImageUrl ? [fullImageUrl] : [],
+      title: blogData.title,
+      description: cleanDescription,
+      images: fullImageUrl ? [{ url: fullImageUrl }] : [],
     },
   };
 }
@@ -62,45 +85,46 @@ export async function generateMetadata({
 export default async function BlogDetails({ params }: PageProps) {
   const { id } = await params;
   const res = await getBlogBySlugAction(id);
-  const blog = res.data;
+  const blog = res?.data as BlogResponse | BlogData | undefined;
+  const blogData: BlogData | undefined =
+    blog && "data" in blog && blog.data ? blog.data : (blog as BlogData);
 
-  if (!res.success || !blog) {
+  if (!res?.success || !blogData || !blogData.title) {
     notFound();
   }
 
-  const rawImage = blog?.image || blog?.cover_image;
-  const imageUrl = getImageUrl(typeof rawImage === "string" ? rawImage : undefined);
-  const contentBody = blog?.content || blog?.description || blog?.excerpt || "";
+  const rawImage = blogData.image || blogData.cover_image;
+  const imageUrl = getImageUrl(
+    typeof rawImage === "string" ? rawImage : undefined
+  );
+  const contentBody = blogData.description || blogData.content || "";
 
   return (
     <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      {blog.category && (
+      {blogData.category && (
         <div className="text-xs font-bold tracking-wider text-brand-red uppercase">
-          {blog.category}
+          {blogData.category}
         </div>
       )}
 
       <h1 className="text-3xl md:text-4xl font-bold text-brand-navy mt-2 leading-tight">
-        {blog.title}
+        {blogData.title}
       </h1>
 
       <div className="flex items-center justify-between flex-wrap gap-3 mt-3">
         <div className="flex items-center gap-3 text-xs text-brand-navy/60">
-          {(blog as { author?: string }).author && (
-            <span>{(blog as { author?: string }).author}</span>
-          )}
+          {blogData.author && <span>{blogData.author}</span>}
           <span className="inline-flex items-center gap-1">
-            <Eye className="w-3.5 h-3.5" /> {(blog as { views?: number }).views ?? 0} reads
+            <Eye className="w-3.5 h-3.5" /> {blogData.views ?? 0} reads
           </span>
         </div>
       </div>
 
-      {/* Image Render */}
       {imageUrl && (
         <div className="relative mt-6 aspect-video w-full overflow-hidden rounded-2xl bg-brand-light/40">
           <Image
             src={imageUrl}
-            alt={blog.title || "Blog Image"}
+            alt={blogData.title || "Blog Image"}
             fill
             priority
             unoptimized
@@ -109,12 +133,12 @@ export default async function BlogDetails({ params }: PageProps) {
         </div>
       )}
 
-      <article className="mt-8 prose max-w-none text-brand-navy">
+      <article className="mt-8 prose prose-slate max-w-none text-brand-navy/85 leading-relaxed text-base wrap-break-word">
         <Description description={contentBody} />
       </article>
 
       <div className="mt-12 pt-8 border-t border-brand-light">
-        <ShareButtons title={blog.title} />
+        <ShareButtons title={blogData.title} />
       </div>
     </main>
   );
