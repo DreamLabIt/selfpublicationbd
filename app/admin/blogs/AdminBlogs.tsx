@@ -186,10 +186,11 @@ export default function AdminBlogs({ initialBlogs = [] }: AdminBlogsClientProps)
 
             formData.append("title", data.title);
             formData.append("slug", finalSlug);
-            formData.append("excerpt", data.excerpt || "");
-            formData.append("content", data.content || "");
-            formData.append("description", data.excerpt || data.content || "");
+            formData.append("author", "Self Preparation");
             formData.append("category", "general");
+            formData.append("views", "0");
+            formData.append("description", data.content || "");
+            formData.append("content", data.excerpt || "");
 
             if (selectedFile) {
                 formData.append("image", selectedFile);
@@ -286,11 +287,6 @@ export default function AdminBlogs({ initialBlogs = [] }: AdminBlogsClientProps)
                                     {/* CONTENT */}
                                     <div className="p-5">
                                         <h2 className="font-bold text-lg line-clamp-2">{blog.title}</h2>
-                                        {blog.excerpt && (
-                                            <p className="text-sm text-gray-600 mt-2 line-clamp-2">
-                                                {blog.excerpt}
-                                            </p>
-                                        )}
                                     </div>
                                 </div>
 

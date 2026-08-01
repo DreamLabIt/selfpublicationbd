@@ -109,7 +109,6 @@ export async function getPublicBlogsAction(): Promise<{
         });
 
         const result = await res.json();
-
         if (!res.ok) {
             return {
                 success: false,
@@ -124,6 +123,7 @@ export async function getPublicBlogsAction(): Promise<{
             (Array.isArray(result?.data?.blogs) && result.data.blogs) ||
             (Array.isArray(result?.blogs) && result.blogs) ||
             [];
+        console.log("Public Blogs Response:", blogsData);
 
         return {
             success: true,
