@@ -8,6 +8,7 @@ import Description from "@/components/site/Description";
 import { PageProps } from "@/types";
 import { getBlogBySlugAction } from "@/app/actions/blog";
 
+
 const getImageUrl = (imagePath?: string) => {
   if (!imagePath) return "";
   if (
@@ -43,8 +44,8 @@ export async function generateMetadata({
     };
   }
 
-  const rawImage = blog.image || blog.cover_image;
-  const rawDescription = blog.description || blog.excerpt || blog.content || "";
+  const rawImage = blog?.image || blog?.cover_image;
+  const rawDescription = blog?.description || blog?.excerpt || blog?.content || "";
   const fullImageUrl = getImageUrl(typeof rawImage === "string" ? rawImage : undefined);
 
   return {
@@ -67,9 +68,9 @@ export default async function BlogDetails({ params }: PageProps) {
     notFound();
   }
 
-  const rawImage = blog.image || blog.cover_image;
+  const rawImage = blog?.image || blog?.cover_image;
   const imageUrl = getImageUrl(typeof rawImage === "string" ? rawImage : undefined);
-  const contentBody = blog.content || blog.description || blog.excerpt || "";
+  const contentBody = blog?.content || blog?.description || blog?.excerpt || "";
 
   return (
     <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">

@@ -1,18 +1,18 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { fetchWithAuth } from "@/lib/fetchWithAuth";
 import { API_KEY, BACKEND_URL } from "@/utils/api";
 
 export interface Blog {
-    description: string | undefined;
-    image(image: unknown): string | import("next/dist/shared/lib/get-img-props").StaticImport;
+    image: string | undefined;
     id?: string | number;
     _id?: string | number;
     title: string;
     slug: string;
     excerpt?: string;
     content?: string;
+    description?: string;
     cover_image?: string;
     category?: string;
     createdAt?: string;
@@ -21,20 +21,22 @@ export interface Blog {
 
 const ADMIN_BLOG_PATH = "/admin/blogs";
 const PUBLIC_BLOG_PATH = "/blog";
+const BLOG_TAG = "blog";
 
-function clearBlogCache() {
+function clearBlogCache(slug?: string) {
     try {
         revalidatePath(ADMIN_BLOG_PATH);
         revalidatePath(PUBLIC_BLOG_PATH);
-    } catch {
-        return {
-            success: false,
-            message: "Error clearing cache:",
-        };
+        if (slug) {
+            revalidatePath(`/blog/${slug}`);
+        }
+        revalidateTag(BLOG_TAG, "default");
+    } catch (error) {
+        console.error("Error clearing blog cache:", error);
     }
 }
 
-// 1. GET ALL BLOGS (ADMIN)
+// 1. GET ALL BLOGS 
 export async function getAllBlogsAdminAction(): Promise<{
     success: boolean;
     data: Blog[];
@@ -43,7 +45,7 @@ export async function getAllBlogsAdminAction(): Promise<{
     try {
         const res = await fetchWithAuth("/api/v1/blog/admin", {
             method: "GET",
-            next: { revalidate: 0 },
+            cache: "no-store",
         });
 
         const result = await res.json();
@@ -89,7 +91,7 @@ export async function getPublicBlogsAction(): Promise<{
     try {
         const res = await fetch(`${BACKEND_URL}/api/v1/blog/public`, {
             method: "GET",
-            next: { revalidate: 0, },
+            next: { tags: [BLOG_TAG] },
             headers: {
                 "Content-Type": "application/json",
                 ...(API_KEY && { "x-api-key": API_KEY }),
@@ -135,6 +137,7 @@ export async function getBlogBySlugAction(slug: string): Promise<{
     try {
         const res = await fetch(`${BACKEND_URL}/api/v1/blog/${slug}`, {
             method: "GET",
+            next: { tags: [BLOG_TAG, `blog-${slug}`] },
             headers: {
                 "Content-Type": "application/json",
                 ...(API_KEY && { "x-api-key": API_KEY }),
@@ -215,9 +218,7 @@ export async function updateBlogAction(
         });
 
         const result = await res.json();
-        console.log("updateBlogAction", result);
-        console.log("slug =>", formData.get("slug"));
-        console.log([...formData.entries()]);
+
         if (!res.ok) {
             return {
                 success: false,
@@ -225,7 +226,13 @@ export async function updateBlogAction(
             };
         }
 
-        clearBlogCache();
+        const slug =
+            (formData.get("slug") as string) ||
+            result?.data?.slug ||
+            result?.blog?.slug;
+
+        clearBlogCache(slug);
+
         return { success: true, message: result.message || "Blog updated successfully" };
     } catch {
         return {

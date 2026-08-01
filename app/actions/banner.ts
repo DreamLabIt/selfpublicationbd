@@ -1,6 +1,6 @@
 'use server';
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { fetchWithAuth } from "@/lib/fetchWithAuth";
 import { API_KEY, BACKEND_URL } from "@/utils/api";
 
@@ -38,11 +38,13 @@ export interface ActionResult<T = Banner> {
 
 const ADMIN_BANNER_PATH = "/admin/hero-slider";
 const PUBLIC_HOME_PATH = "/";
+const BANNER_TAG = "banner";
 
 function clearBannerCache() {
     try {
         revalidatePath(ADMIN_BANNER_PATH);
         revalidatePath(PUBLIC_HOME_PATH);
+        revalidateTag(BANNER_TAG, "default");  
     } catch {
         return {
             success: false,
@@ -56,7 +58,7 @@ export async function getPublicBannersAction(): Promise<Banner[]> {
     try {
         const res = await fetch(`${BACKEND_URL}/api/v1/banner/public`, {
             method: "GET",
-            next: { revalidate: 0, tags: ["public-banners"] },
+            next: { tags: [BANNER_TAG] },
             headers: {
                 'Content-Type': 'application/json',
                 ...(API_KEY && { 'x-api-key': API_KEY }),
@@ -85,7 +87,6 @@ export async function getAllBannersAdminAction(): Promise<Banner[]> {
         const res = await fetchWithAuth("/api/v1/banner", {
             method: "GET",
             cache: "no-store",
-            next: { revalidate: 0 },
         });
 
         if (!res.ok) {

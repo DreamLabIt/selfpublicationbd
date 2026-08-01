@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
         }
 
         for (const tag of tags) {
-            revalidateTag(tag, "max");
+            revalidateTag(tag, "default");
         }
 
         return NextResponse.json({
@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
             revalidated: tags,
             timestamp: new Date().toISOString(),
         });
-    } catch  {
+    } catch {
         return NextResponse.json({
             success: false,
             message: "Internal Server Error",

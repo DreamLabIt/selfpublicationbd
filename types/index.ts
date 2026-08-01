@@ -146,7 +146,8 @@ export interface Blog {
   title: string;
   excerpt: string;
   content: string;
-  cover_image: string;
+  image?: string;
+  cover_image?: string;
   category: string;
   author: string;
   views: number;
@@ -155,7 +156,7 @@ export interface Blog {
 export interface Blog {
   id: string | number;
   title: string;
-  cover_image: string;
+  cover_image?: string;
   [key: string]: unknown;
 }
 
@@ -164,7 +165,7 @@ export interface BlogItem {
   slug?: string;
   title: string;
   excerpt: string;
-  cover_image: string;
+  cover_image?: string;
   category: string;
   author: string;
   views: number;
