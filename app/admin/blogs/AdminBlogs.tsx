@@ -46,7 +46,7 @@ interface BlogFormValues {
     title: string;
     slug: string;
     excerpt: string;
-    content: string;
+    description: string;
     file: FileList | null;
 }
 
@@ -54,7 +54,7 @@ const defaultValues: BlogFormValues = {
     title: "",
     slug: "",
     excerpt: "",
-    content: "",
+    description: "",
     file: null,
 };
 
@@ -87,7 +87,6 @@ export default function AdminBlogs({ initialBlogs = [] }: AdminBlogsClientProps)
         handleSubmit,
         reset,
         setValue,
-        watch,
         control,
         formState: { isSubmitting },
     } = useForm<BlogFormValues>({
@@ -147,8 +146,7 @@ export default function AdminBlogs({ initialBlogs = [] }: AdminBlogsClientProps)
         reset({
             title: blog.title || "",
             slug: rawSlug || makeSlug(blog.title || ""),
-            excerpt: blog.excerpt || blog.description || "",
-            content: blog.content || "",
+            description: blog.description || "",
             file: null,
         });
 
@@ -192,8 +190,7 @@ export default function AdminBlogs({ initialBlogs = [] }: AdminBlogsClientProps)
             formData.append("author", "Self Preparation");
             formData.append("category", "general");
             formData.append("views", "0");
-            formData.append("description", data.content || "");
-            formData.append("content", data.excerpt || "");
+            formData.append("description", data.description || "");
 
             if (selectedFile) {
                 formData.append("image", selectedFile);
@@ -378,22 +375,9 @@ export default function AdminBlogs({ initialBlogs = [] }: AdminBlogsClientProps)
                         </div>
 
                         <div>
-                            <label className="text-xs font-medium block mb-1">
-                                Short Description
-                            </label>
-                            <textarea
-                                placeholder="Short Description"
-                                {...register("excerpt")}
-                                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
-                                rows={2}
-                            />
-                        </div>
-
-
-                        <div>
-                            <label className="text-sm font-medium mb-1 block">Content</label>
+                            <label className="text-sm font-medium mb-1 block">Description</label>
                             <Controller
-                                name="content"
+                                name="description"
                                 control={control}
                                 render={({ field }) => (
                                     <RichEditor
