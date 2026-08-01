@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import {
     createBlogAction,
     updateBlogAction,
@@ -19,6 +19,7 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog";
 import Image from "next/image";
+import RichEditor from "@/components/admin/RichEditor/RichEditor";
 
 interface Blog {
     _id: string;
@@ -86,6 +87,8 @@ export default function AdminBlogs({ initialBlogs = [] }: AdminBlogsClientProps)
         handleSubmit,
         reset,
         setValue,
+        watch,
+        control,
         formState: { isSubmitting },
     } = useForm<BlogFormValues>({
         defaultValues,
@@ -386,13 +389,18 @@ export default function AdminBlogs({ initialBlogs = [] }: AdminBlogsClientProps)
                             />
                         </div>
 
+
                         <div>
-                            <label className="text-xs font-medium block mb-1">Full Content</label>
-                            <textarea
-                                placeholder="Write full blog content here..."
-                                {...register("content")}
-                                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
-                                rows={5}
+                            <label className="text-sm font-medium mb-1 block">Content</label>
+                            <Controller
+                                name="content"
+                                control={control}
+                                render={({ field }) => (
+                                    <RichEditor
+                                        value={field.value || ""}
+                                        onChange={(v) => field.onChange(v)}
+                                    />
+                                )}
                             />
                         </div>
 
