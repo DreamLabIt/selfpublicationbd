@@ -44,7 +44,7 @@ function clearBannerCache() {
     try {
         revalidatePath(ADMIN_BANNER_PATH);
         revalidatePath(PUBLIC_HOME_PATH);
-        revalidateTag(BANNER_TAG, "default");  
+        revalidateTag(BANNER_TAG, "default");
     } catch {
         return {
             success: false,
@@ -65,9 +65,7 @@ export async function getPublicBannersAction(): Promise<Banner[]> {
             },
         });
 
-        if (!res.ok) {
-            return [];
-        }
+        if (!res.ok) return [];
 
         const result = await res.json();
         if (Array.isArray(result)) return result;
@@ -89,9 +87,7 @@ export async function getAllBannersAdminAction(): Promise<Banner[]> {
             cache: "no-store",
         });
 
-        if (!res.ok) {
-            return [];
-        }
+        if (!res.ok) return [];
 
         const result = await res.json();
         if (Array.isArray(result)) return result;
@@ -105,12 +101,14 @@ export async function getAllBannersAdminAction(): Promise<Banner[]> {
     }
 }
 
-// Create Banner
-export async function createBannerAction(data: CreateBannerDTO): Promise<ActionResult<Banner>> {
+// Create Banner 
+export async function createBannerAction(data: FormData | CreateBannerDTO): Promise<ActionResult<Banner>> {
     try {
+        const isFormData = data instanceof FormData;
         const res = await fetchWithAuth("/api/v1/banner", {
             method: "POST",
-            body: JSON.stringify(data),
+            ...(isFormData ? {} : { headers: { 'Content-Type': 'application/json' } }),
+            body: isFormData ? data : JSON.stringify(data),
         });
 
         const result = await res.json();
@@ -142,14 +140,23 @@ export async function createBannerAction(data: CreateBannerDTO): Promise<ActionR
 }
 
 // Update Banner
-export async function updateBannerAction(bannerId: string, data: UpdateBannerDTO): Promise<ActionResult<Banner>> {
+export async function updateBannerAction(bannerId: string, data: FormData | UpdateBannerDTO): Promise<ActionResult<Banner>> {
     try {
+        const isFormData = data instanceof FormData;
         const res = await fetchWithAuth(`/api/v1/banner/${bannerId}`, {
             method: "PUT",
-            body: JSON.stringify(data),
+            ...(isFormData ? {} : { headers: { 'Content-Type': 'application/json' } }),
+            body: isFormData ? data : JSON.stringify(data),
         });
 
         const result = await res.json();
+
+        if (res.status === 401) {
+            return {
+                success: false,
+                message: "আপনার সেশন শেষ হয়ে গেছে। অনুগ্রহ করে আবার লগইন করুন।",
+            };
+        }
 
         if (!res.ok || !result.success) {
             return {
@@ -197,50 +204,5 @@ export async function deleteBannerAction(bannerId: string): Promise<ActionResult
         };
     } catch {
         return { success: false, message: "সার্ভারে সমস্যা হয়েছে।" };
-    }
-}
-
-// Upload Banner Image
-export async function uploadBannerImageAction(formData: FormData): Promise<ActionResult<{ url: string }>> {
-    try {
-        const res = await fetchWithAuth("/api/v1/banner", {
-            method: "POST",
-            body: formData,
-        });
-
-        const result = await res.json().catch(() => ({}));
-
-        if (!res.ok) {
-            return {
-                success: false,
-                message: result.message || result.error || "Image upload failed"
-            };
-        }
-
-        const imageUrl =
-            result.data?.url ||
-            result.url ||
-            result.data?.image ||
-            result.image ||
-            result.data?.path ||
-            result.path;
-
-        if (!imageUrl) {
-            return {
-                success: false,
-                message: "Image URL missing in server response"
-            };
-        }
-
-        clearBannerCache();
-
-        return {
-            success: true,
-            message: "Uploaded successfully",
-            data: { url: imageUrl },
-        };
-
-    } catch {
-        return { success: false, message: "Server error during upload" };
     }
 }

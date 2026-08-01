@@ -11,7 +11,6 @@ import {
     createBannerAction,
     updateBannerAction,
     deleteBannerAction,
-    uploadBannerImageAction,
     Banner,
 } from "@/app/actions/banner";
 import {
@@ -44,6 +43,7 @@ export default function HeroSliderClient({ initialSliders }: Props) {
     const [busy, setBusy] = useState(false);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
     const {
         register,
         handleSubmit,
@@ -56,6 +56,7 @@ export default function HeroSliderClient({ initialSliders }: Props) {
     });
 
     const watchImage = useWatch({ control, name: "image" });
+
     const resetFormAndFiles = () => {
         reset(emptyBanner);
         setSelectedFile(null);
@@ -64,11 +65,13 @@ export default function HeroSliderClient({ initialSliders }: Props) {
         }
         setPreviewUrl(null);
     };
+
     const openNew = () => {
         setEditId(null);
         resetFormAndFiles();
         setOpen(true);
     };
+
     const openEdit = (item: Banner) => {
         const id = item._id || item.id || null;
         if (!id) {
@@ -109,40 +112,26 @@ export default function HeroSliderClient({ initialSliders }: Props) {
     const onSubmit = async (data: BannerPayload) => {
         setBusy(true);
         try {
-            let finalImageUrl = data.image;
-            if (selectedFile) {
-                const formData = new FormData();
-                formData.append("image", selectedFile);
-                const currentOrderNum = Number(data.order);
-                const validOrder = !isNaN(currentOrderNum) && currentOrderNum > 0 ? currentOrderNum : 1;
-                formData.append("order", String(validOrder));
-                formData.append("isActive", String(Boolean(data.is_active)));
-                const uploadRes = await uploadBannerImageAction(formData);
-                if (uploadRes.success && uploadRes.data?.url) {
-                    finalImageUrl = uploadRes.data.url;
-                } else {
-                    toast.error(uploadRes.message || "ছবি আপলোড করতে ব্যর্থ হয়েছে!");
-                    setBusy(false);
-                    return;
-                }
-            }
-            if (!finalImageUrl || finalImageUrl.trim() === "") {
-                toast.error("অনুগ্রহ করে একটি ছবি সিলেক্ট করুন অথবা Image URL দিন!");
-                setBusy(false);
-                return;
-            }
-
             const parsedOrder = typeof data.order === "number" && !isNaN(data.order) && data.order > 0 ? data.order : 1;
 
-            const payload = {
-                image: finalImageUrl,
-                order: parsedOrder,
-                isActive: Boolean(data.is_active),
-            };
-
-            // Edit Mode vs Create Mode
             if (editId) {
-                const res = await updateBannerAction(editId, payload);
+                let res;
+                if (selectedFile) {
+                    const formData = new FormData();
+                    formData.append("image", selectedFile);
+                    formData.append("order", String(parsedOrder));
+                    formData.append("isActive", String(Boolean(data.is_active)));
+
+                    res = await updateBannerAction(editId, formData);
+                } else {
+                    const payload = {
+                        image: data.image,
+                        order: parsedOrder,
+                        isActive: Boolean(data.is_active),
+                    };
+                    res = await updateBannerAction(editId, payload);
+                }
+
                 if (res.success) {
                     toast.success(res.message);
                     setSliders((prev) =>
@@ -151,8 +140,10 @@ export default function HeroSliderClient({ initialSliders }: Props) {
                             if (currentId === editId) {
                                 return {
                                     ...item,
-                                    ...payload,
-                                    is_active: payload.isActive,
+                                    ...(res.data ? res.data : {}),
+                                    image: res.data?.image || data.image,
+                                    order: parsedOrder,
+                                    is_active: Boolean(data.is_active),
                                 };
                             }
                             return item;
@@ -164,23 +155,37 @@ export default function HeroSliderClient({ initialSliders }: Props) {
                     toast.error(res.message);
                 }
             } else {
+                let res;
                 if (selectedFile) {
-                    toast.success("ব্যানার সফলভাবে তৈরি হয়েছে!");
+                    const formData = new FormData();
+                    formData.append("image", selectedFile);
+                    formData.append("order", String(parsedOrder));
+                    formData.append("isActive", String(Boolean(data.is_active)));
+
+                    res = await createBannerAction(formData);
+                } else {
+                    if (!data.image || data.image.trim() === "") {
+                        toast.error("অনুগ্রহ করে একটি ছবি সিলেক্ট করুন অথবা Image URL দিন!");
+                        setBusy(false);
+                        return;
+                    }
+                    const payload = {
+                        image: data.image,
+                        order: parsedOrder,
+                        isActive: Boolean(data.is_active),
+                    };
+                    res = await createBannerAction(payload);
+                }
+
+                if (res.success) {
+                    toast.success(res.message);
+                    if (res.data) {
+                        setSliders((prev) => [...prev, res.data!]);
+                    }
                     setOpen(false);
                     resetFormAndFiles();
-                    window.location.reload();
                 } else {
-                    const res = await createBannerAction(payload);
-                    if (res.success) {
-                        toast.success(res.message);
-                        if (res.data) {
-                            setSliders((prev) => [...prev, res.data!]);
-                        }
-                        setOpen(false);
-                        resetFormAndFiles();
-                    } else {
-                        toast.error(res.message);
-                    }
+                    toast.error(res.message);
                 }
             }
         } catch (error) {
@@ -414,12 +419,12 @@ export default function HeroSliderClient({ initialSliders }: Props) {
                                         setOpen(false);
                                         resetFormAndFiles();
                                     }}
+
                                 >
                                     Cancel
                                 </button>
                             </div>
-
-                            <div className="bg-black text-white px-4 py-2 rounded-lg text-sm">
+                            <div className="bg-black text-white px-4 py-2 rounded-lg text-sm  cursor-pointer disabled:opacity-50">
                                 <button
                                     type="submit"
                                     disabled={busy}
