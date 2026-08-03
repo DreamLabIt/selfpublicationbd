@@ -212,23 +212,25 @@ export default function WinnersClient({ initialWinners = [] }: WinnersClientProp
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight">Winners</h1>
                     <p className="text-sm text-gray-500">
-                        উইনারদের তালিকা পরিচালনা ও কন্ট্রোল করুন
+                        Mengelola dan mengontrol daftar pemenang.
                     </p>
                 </div>
 
-                <button
-                    onClick={openNew}
-                    className="bg-black hover:bg-gray-800 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-medium transition-colors cursor-pointer"
-                >
-                    <Plus className="w-4 h-4" />
-                    Add Winner
-                </button>
+                <div className="bg-black hover:bg-gray-800 text-white px-4 py-2 rounded-lg  text-sm font-medium transition-colors cursor-pointer">
+                    <button
+                        onClick={openNew}
+                        className="flex items-center gap-2"
+                    >
+                        <Plus className="w-4 h-4" />
+                        Add Winner
+                    </button>
+                </div>
             </div>
 
             {/* WINNERS LIST */}
             {winnersList.length === 0 ? (
-                <div className="text-center py-12 border rounded-2xl bg-gray-50 text-gray-500 text-sm">
-                    কোনো উইনার পাওয়া যায়নি। Add Winner বাটনে ক্লিক করে নতুন যোগ করুন।
+                <div className="text-center py-12 border border-gray-300 rounded-2xl bg-gray-50 text-gray-500 text-sm">
+                    No winners found. Add a new winner by clicking the Add Winner button.।
                 </div>
             ) : (
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -347,7 +349,7 @@ export default function WinnersClient({ initialWinners = [] }: WinnersClientProp
                                 <input
                                     placeholder="Full Name"
                                     {...register("name", { required: "Name is required" })}
-                                    className="w-full border px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-black"
+                                    className="w-full border border-gray-300 px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-black"
                                 />
                             </div>
 
@@ -356,7 +358,7 @@ export default function WinnersClient({ initialWinners = [] }: WinnersClientProp
                                 <input
                                     placeholder="Designation"
                                     {...register("designation", { required: "Designation is required" })}
-                                    className="w-full border px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-black"
+                                    className="w-full border border-gray-300 px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-black"
                                 />
                             </div>
 
@@ -365,7 +367,7 @@ export default function WinnersClient({ initialWinners = [] }: WinnersClientProp
                                 <input
                                     placeholder="Office / Department"
                                     {...register("office")}
-                                    className="w-full border px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-black"
+                                    className="w-full border border-gray-300 px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-black"
                                 />
                             </div>
 
@@ -374,7 +376,7 @@ export default function WinnersClient({ initialWinners = [] }: WinnersClientProp
                                 <input
                                     placeholder="https://..."
                                     {...register("social_url")}
-                                    className="w-full border px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-black"
+                                    className="w-full border border-gray-300 px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-black"
                                 />
                             </div>
 
@@ -384,32 +386,36 @@ export default function WinnersClient({ initialWinners = [] }: WinnersClientProp
                                     placeholder="Quote or message..."
                                     rows={3}
                                     {...register("quote")}
-                                    className="w-full border px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-black"
+                                    className="w-full border border-gray-300 px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-black"
                                 />
                             </div>
                         </div>
 
                         {/* BUTTONS */}
                         <div className="flex justify-end gap-2 pt-2">
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    setOpen(false);
-                                    resetFormAndStates();
-                                }}
-                                className="px-4 py-2 border rounded-lg text-sm hover:bg-gray-50 border-gray-300 transition cursor-pointer"
-                            >
-                                Cancel
-                            </button>
+                            <div>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setOpen(false);
+                                        resetFormAndStates();
+                                    }}
+                                    className="px-4 py-2 border rounded-lg text-sm hover:bg-gray-50 border-gray-300 transition cursor-pointer"
+                                >
+                                    Cancel
+                                </button>
+                            </div>
 
-                            <button
-                                type="submit"
-                                disabled={isSubmitting}
-                                className="bg-black text-white px-5 py-2 rounded-lg text-sm hover:bg-gray-800 transition flex items-center gap-2 disabled:opacity-50 cursor-pointer"
-                            >
-                                {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
-                                {isSubmitting ? "Saving..." : "Save"}
-                            </button>
+                            <div className="bg-black text-white px-5 py-2 rounded-lg text-sm hover:bg-gray-800 transition flex items-center gap-2 disabled:opacity-50 cursor-pointer">
+                                <button
+                                    type="submit"
+                                    disabled={isSubmitting}
+                                    className="flex items-center gap-2"
+                                >
+                                    {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
+                                    {isSubmitting ? "Saving..." : "Save"}
+                                </button>
+                            </div>
                         </div>
                     </form>
                 </DialogContent>
