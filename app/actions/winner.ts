@@ -30,6 +30,7 @@ export interface CreateWinnerDTO {
     name: string;
     designation: string;
     office: string;
+    quote?: string;
     socialLinks?: SocialLinks | string;
     order?: number;
     isActive?: boolean;
@@ -39,6 +40,7 @@ export interface UpdateWinnerDTO {
     name?: string;
     designation?: string;
     office?: string;
+    quote?: string;
     socialLinks?: SocialLinks | string;
     order?: number;
     isActive?: boolean;
@@ -229,14 +231,21 @@ export async function createWinnerAction(
 ): Promise<ActionResult<Winner>> {
     try {
         const isFormData = data instanceof FormData;
+
+        console.log("Creating Winner :", data);
+        if (isFormData) {
+            for (const [key, value] of (data as FormData).entries()) {
+                console.log(`FormData field: ${key} =`, value instanceof File ? `File(${value.name}, ${value.size} bytes)` : value);
+            }
+        }
+
         const res = await fetchWithAuth("/api/v1/winner", {
             method: "POST",
-            ...(isFormData ? {} : { headers: { "Content-Type": "application/json" } }),
             body: isFormData ? data : JSON.stringify(data),
         });
 
         const result = await res.json();
-
+        console.log("Create Winner Response:", result);
         if (res.status === 401) {
             return {
                 success: false,
@@ -276,7 +285,6 @@ export async function updateWinnerAction(
         const isFormData = data instanceof FormData;
         const res = await fetchWithAuth(`/api/v1/winner/${id}`, {
             method: "PUT",
-            ...(isFormData ? {} : { headers: { "Content-Type": "application/json" } }),
             body: isFormData ? data : JSON.stringify(data),
         });
 
