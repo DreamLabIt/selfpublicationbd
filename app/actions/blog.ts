@@ -22,8 +22,6 @@ export interface Blog {
 
 const ADMIN_BLOG_PATH = "/admin/blogs";
 const PUBLIC_BLOG_PATH = "/blog";
-
-// Cache Tags
 const BLOGS_COLLECTION_TAG = "blogs";
 const getSingleBlogSlugTag = (slug: string) => `blog:${slug}`;
 const getSingleBlogIdTag = (id: string | number) => `blog:${id}`;
@@ -47,7 +45,7 @@ function clearBlogCache(slug?: string, blogId?: string | number) {
     }
 }
 
-// 1. GET ALL BLOGS (ADMIN)
+// 1. GET ALL BLOGS 
 export async function getAllBlogsAdminAction(): Promise<{
     success: boolean;
     data: Blog[];

@@ -2,52 +2,20 @@
 
 import { useState, useRef } from "react";
 import { useForm, Controller } from "react-hook-form";
-import {
-    createBlogAction,
-    updateBlogAction,
-    deleteBlogAction,
-} from "@/app/actions/blog";
+import { createBlogAction, updateBlogAction, deleteBlogAction, } from "@/app/actions/blog";
 import { toast } from "sonner";
 import { Plus, Edit, Trash2, Image as ImageIcon, Loader2 } from "lucide-react";
 import { BACKEND_URL } from "@/utils/api";
 import { useRouter } from "next/navigation";
 
-import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, } from "@/components/ui/dialog";
 import Image from "next/image";
 import RichEditor from "@/components/admin/RichEditor/RichEditor";
-
-interface Blog {
-    _id: string;
-    id?: string;
-    image?: string;
-    cover_image?: string;
-    title: string;
-    slug: string;
-    excerpt?: string;
-    description?: string;
-    content?: string;
-    order?: number;
-    isActive?: boolean;
-    createdAt?: string;
-    updatedAt?: string;
-}
+import { Blog, BlogFormValues } from "@/types";
 
 interface AdminBlogsClientProps {
     initialBlogs: Blog[];
     errorMessage?: string;
-}
-
-interface BlogFormValues {
-    title: string;
-    slug: string;
-    excerpt: string;
-    description: string;
-    file: FileList | null;
 }
 
 const defaultValues: BlogFormValues = {

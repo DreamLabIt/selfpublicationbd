@@ -5,20 +5,8 @@ import { notFound } from "next/navigation";
 import { BACKEND_URL } from "@/utils/api";
 import ShareButtons from "@/components/site/ShareButtons";
 import Description from "@/components/site/Description";
-import { PageProps } from "@/types";
+import { PageProps, BlogData } from "@/types";
 import { getBlogBySlugAction } from "@/app/actions/blog";
-
-export interface BlogData {
-  _id: string;
-  image?: string;
-  cover_image?: string;
-  title: string;
-  description?: string;
-  content?: string;
-  category?: string;
-  author?: string;
-  views?: number;
-}
 
 export interface BlogResponse {
   data: BlogData;

@@ -53,13 +53,13 @@ export default function BlogCard({ blog }: BlogCardProps) {
             </div>
 
             <div className="p-5 pb-3">
-                <div className="text-[10px] tracking-wider font-bold text-brand-red uppercase">{blog.category}</div>
+                {/* <div className="text-[10px] tracking-wider font-bold text-brand-red uppercase">{blog.category}</div> */}
                 <h3 className="font-bold text-brand-navy mt-2 line-clamp-2">{blog.title}</h3>
                 <div className="text-sm text-brand-navy/65 mt-2 line-clamp-2">{blog.excerpt}</div>
                 {/* Author & Views */}
                 <div className="flex items-center gap-3 mt-4 text-xs text-brand-navy/55">
-                    <span className="font-medium">{blog.author}</span>
-                    <span className="inline-flex items-center gap-1"><Eye className="w-3 h-3" /> {blog.views || 0}</span>
+                    {/* <span className="font-medium">{blog.author}</span> */}
+                    {/* <span className="inline-flex items-center gap-1"><Eye className="w-3 h-3" /> {blog.views || 0}</span> */}
                 </div>
             </div>
         </Link>

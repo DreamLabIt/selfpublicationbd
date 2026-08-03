@@ -141,16 +141,39 @@ export interface CartContextType {
 
 // Blog
 export interface Blog {
-  id: string | number;
-  slug?: string;
-  title: string;
-  excerpt: string;
-  content: string;
+    _id: string;
+    image?: string;
+    cover_image?: string;
+    title: string;
+    slug: string;
+    excerpt?: string;
+    description?: string;
+    content?: string;
+    order?: number;
+    isActive?: boolean;
+    createdAt?: string;
+    updatedAt?: string;
+}
+
+
+export interface BlogFormValues {
+    title: string;
+    slug: string;
+    excerpt: string;
+    description: string;
+    file: FileList | null;
+}
+
+export interface BlogData {
+  _id: string;
   image?: string;
   cover_image?: string;
-  category: string;
-  author: string;
-  views: number;
+  title: string;
+  description?: string;
+  content?: string;
+  category?: string;
+  author?: string;
+  views?: number;
 }
 
 export interface Blog {
@@ -159,6 +182,7 @@ export interface Blog {
   cover_image?: string;
   [key: string]: unknown;
 }
+
 
 export interface BlogItem {
   id: number;
