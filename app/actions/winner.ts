@@ -18,6 +18,7 @@ export interface Winner {
     name: string;
     designation: string;
     office: string;
+    quote?: string;
     socialLinks?: SocialLinks | string;
     order?: number;
     isActive?: boolean;
@@ -72,6 +73,12 @@ function clearWinnerCache(winnerId?: string | number) {
     }
 }
 
+// Helper to normalize Winner ID
+const normalizeWinner = (winner: Winner): Winner => ({
+    ...winner,
+    id: winner.id || winner._id,
+});
+
 // 1. GET Public Active Winners
 export async function getPublicWinnersAction(): Promise<{
     success: boolean;
@@ -104,14 +111,9 @@ export async function getPublicWinnersAction(): Promise<{
             (Array.isArray(result?.winners) && result.winners) ||
             [];
 
-        const normalizedWinners = winnersData.map((w: Winner) => ({
-            ...w,
-            id: w.id || w._id,
-        }));
-
         return {
             success: true,
-            data: normalizedWinners,
+            data: winnersData.map(normalizeWinner),
         };
     } catch {
         return {
@@ -165,10 +167,7 @@ export async function getAllWinnersAdminAction(params?: {
             (Array.isArray(result?.winners) && result.winners) ||
             [];
 
-        const normalizedWinners = winnersData.map((w: Winner) => ({
-            ...w,
-            id: w.id || w._id,
-        }));
+        const normalizedWinners = winnersData.map(normalizeWinner);
 
         return {
             success: true,
@@ -214,7 +213,7 @@ export async function getWinnerByIdAction(id: string | number): Promise<{
 
         return {
             success: true,
-            data: winner ? { ...winner, id: winner.id || winner._id } : null,
+            data: winner ? normalizeWinner(winner) : null,
         };
     } catch {
         return {
@@ -232,20 +231,13 @@ export async function createWinnerAction(
     try {
         const isFormData = data instanceof FormData;
 
-        console.log("Creating Winner :", data);
-        if (isFormData) {
-            for (const [key, value] of (data as FormData).entries()) {
-                console.log(`FormData field: ${key} =`, value instanceof File ? `File(${value.name}, ${value.size} bytes)` : value);
-            }
-        }
-
         const res = await fetchWithAuth("/api/v1/winner", {
             method: "POST",
             body: isFormData ? data : JSON.stringify(data),
         });
 
         const result = await res.json();
-        console.log("Create Winner Response:", result);
+
         if (res.status === 401) {
             return {
                 success: false,
@@ -262,29 +254,44 @@ export async function createWinnerAction(
 
         clearWinnerCache();
 
+        const rawWinnerData = result.data?.winner || result.data || result;
+
         return {
             success: true,
             message: result.message || "উইনার সফলভাবে তৈরি হয়েছে!",
-            data: result.data,
+            data: normalizeWinner(rawWinnerData),
         };
     } catch {
         return { success: false, message: "সার্ভারে সমস্যা হয়েছে।" };
     }
 }
 
-// 5. UPDATE Winner
+// 5. UPDATE Winner Action
 export async function updateWinnerAction(
     id: string | number,
     data: FormData | UpdateWinnerDTO
 ): Promise<ActionResult<Winner>> {
+
     if (!id || id === "undefined") {
         return { success: false, message: "Invalid Winner ID provided for update." };
     }
 
     try {
         const isFormData = data instanceof FormData;
+        const headers: Record<string, string> = {};
+
+        if (isFormData) {
+            const entries: Record<string, unknown> = {};
+            data.forEach((val, key) => {
+                entries[key] = val instanceof File ? `File: ${val.name} (${val.size} bytes)` : val;
+            });
+        } else {
+            headers["Content-Type"] = "application/json";
+        }
+
         const res = await fetchWithAuth(`/api/v1/winner/${id}`, {
             method: "PUT",
+            headers,
             body: isFormData ? data : JSON.stringify(data),
         });
 
@@ -306,16 +313,19 @@ export async function updateWinnerAction(
 
         clearWinnerCache(id);
 
+        const rawWinnerData = result.data?.winner || result.data || result;
+        const normalizedData = normalizeWinner(rawWinnerData);
+
         return {
             success: true,
             message: result.message || "উইনার সফলভাবে আপডেট করা হয়েছে!",
-            data: result.data,
+            data: normalizedData,
         };
-    } catch {
+    } catch (error) {
+        console.error("🔥 [ACTION CATCH ERROR] Exception caught in updateWinnerAction:", error);
         return { success: false, message: "সার্ভারে সমস্যা হয়েছে।" };
     }
 }
-
 // 6. DELETE Winner
 export async function deleteWinnerAction(id: string | number): Promise<ActionResult> {
     if (!id || id === "undefined") {

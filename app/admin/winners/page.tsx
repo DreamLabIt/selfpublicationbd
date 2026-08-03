@@ -10,7 +10,6 @@ export const dynamic = "force-dynamic";
 export default async function AdminWinnersPage() {
     const response = await getAllWinnersAdminAction();
     const initialWinners = response.success ? response.data : [];
-    console.log("Initial Winners Data:", initialWinners);
 
     return (
         <div className="p-4 sm:p-6">

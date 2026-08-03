@@ -30,6 +30,7 @@ interface WinnerFormValues {
     office: string;
     quote: string;
     social_url: string;
+    order?: string | number;
 }
 
 const defaultValues: WinnerFormValues = {
@@ -38,6 +39,7 @@ const defaultValues: WinnerFormValues = {
     office: "",
     quote: "",
     social_url: "",
+    order: "",
 };
 
 export default function WinnersClient({ initialWinners = [] }: WinnersClientProps) {
@@ -47,6 +49,7 @@ export default function WinnersClient({ initialWinners = [] }: WinnersClientProp
     const [editId, setEditId] = useState<string | null>(null);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string>("");
+
     const {
         register,
         handleSubmit,
@@ -77,18 +80,12 @@ export default function WinnersClient({ initialWinners = [] }: WinnersClientProp
             return;
         }
 
-        const rawOffice =
-            w.office ||
-            ((w as unknown) as Record<string, unknown>).department as string ||
-            "";
-        const rawQuote =
-            ((w as unknown) as Record<string, unknown>).quote as string || "";
+        const rawOffice = w.office || "";
+        const rawQuote = w.quote || "";
         const rawSocialUrl =
             typeof w.socialLinks === "string"
                 ? w.socialLinks
-                : w.socialLinks?.website ||
-                ((w as unknown) as Record<string, unknown>).social_url as string ||
-                "";
+                : w.socialLinks?.website || "";
 
         reset({
             name: w.name || "",
@@ -96,6 +93,7 @@ export default function WinnersClient({ initialWinners = [] }: WinnersClientProp
             office: rawOffice,
             quote: rawQuote,
             social_url: rawSocialUrl,
+            order: w.order ? String(w.order) : "1",
         });
 
         if (w.image) {
@@ -122,24 +120,64 @@ export default function WinnersClient({ initialWinners = [] }: WinnersClientProp
         }
 
         try {
-            const formData = new FormData();
-            formData.append("name", data.name);
-            formData.append("designation", data.designation);
-            formData.append("office", data.office);
-            formData.append("quote", data.quote);
-
-            if (data.social_url) {
-                formData.append("socialLinks", data.social_url);
-            }
-
-            if (selectedFile) {
-                formData.append("image", selectedFile);
-            }
-
             let res;
+
             if (isEditing && editId) {
-                res = await updateWinnerAction(editId, formData);
+                if (selectedFile) {
+                    const formData = new FormData();
+                    formData.append("name", data.name);
+                    formData.append("designation", data.designation);
+                    formData.append("office", data.office || "");
+                    if (data.quote) formData.append("quote", data.quote);
+
+                    const finalOrder = data.order ? String(data.order) : "1";
+                    formData.append("order", finalOrder);
+
+                    if (data.social_url) {
+                        formData.append("socialLinks", JSON.stringify({ website: data.social_url }));
+                    }
+
+                    formData.append("image", selectedFile);
+
+                    res = await updateWinnerAction(editId, formData);
+                }
+
+                else {
+                    const jsonPayload = {
+                        name: data.name,
+                        designation: data.designation,
+                        office: data.office || "",
+                        quote: data.quote || "",
+                        order: Number(data.order || 1),
+                        ...(data.social_url && {
+                            socialLinks: { website: data.social_url },
+                        }),
+                    };
+
+                    res = await updateWinnerAction(editId, jsonPayload);
+                }
             } else {
+
+                const formData = new FormData();
+                formData.append("name", data.name);
+                formData.append("designation", data.designation);
+                formData.append("office", data.office || "");
+                if (data.quote) formData.append("quote", data.quote);
+
+                let finalOrder = data.order ? String(data.order) : "1";
+                if (!data.order || isNaN(Number(data.order))) {
+                    finalOrder = String(winnersList.length + 1);
+                }
+                formData.append("order", finalOrder);
+
+                if (data.social_url) {
+                    formData.append("socialLinks", JSON.stringify({ website: data.social_url }));
+                }
+
+                if (selectedFile) {
+                    formData.append("image", selectedFile);
+                }
+
                 res = await createWinnerAction(formData);
             }
 
@@ -165,7 +203,7 @@ export default function WinnersClient({ initialWinners = [] }: WinnersClientProp
             }
         } catch (err) {
             console.error(err);
-            toast.error("একটি অপ্রত্যাশিত সমস্যা ঘটেছে");
+            toast.error("একটিunexpected সমস্যা ঘটেছে");
         }
     };
 
@@ -202,7 +240,9 @@ export default function WinnersClient({ initialWinners = [] }: WinnersClientProp
         if (url.startsWith("http://") || url.startsWith("https://") || url.startsWith("blob:")) {
             return url;
         }
-        return url.startsWith("/") ? `${BACKEND_URL}${url}` : `${BACKEND_URL}/${url}`;
+        const cleanBackendUrl = (BACKEND_URL || "").replace(/\/+$/, "");
+        const cleanUrl = url.replace(/^\/+/, "");
+        return `${cleanBackendUrl}/${cleanUrl}`;
     };
 
     return (
@@ -212,31 +252,28 @@ export default function WinnersClient({ initialWinners = [] }: WinnersClientProp
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight">Winners</h1>
                     <p className="text-sm text-gray-500">
-                        Mengelola dan mengontrol daftar pemenang.
+                        উইনারদের তালিকা পরিচালনা করুন।
                     </p>
                 </div>
 
-                <div className="bg-black hover:bg-gray-800 text-white px-4 py-2 rounded-lg  text-sm font-medium transition-colors cursor-pointer">
-                    <button
-                        onClick={openNew}
-                        className="flex items-center gap-2"
-                    >
-                        <Plus className="w-4 h-4" />
-                        Add Winner
-                    </button>
-                </div>
+                <button
+                    onClick={openNew}
+                    className="bg-black hover:bg-gray-800 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer flex items-center gap-2"
+                >
+                    <Plus className="w-4 h-4" />
+                    Add Winner
+                </button>
             </div>
 
             {/* WINNERS LIST */}
             {winnersList.length === 0 ? (
                 <div className="text-center py-12 border border-gray-300 rounded-2xl bg-gray-50 text-gray-500 text-sm">
-                    No winners found. Add a new winner by clicking the Add Winner button.।
+                    কোনো উইনার পাওয়া যায়নি। নতুন উইনার যুক্ত করতে Add Winner বাটনে ক্লিক করুন।
                 </div>
             ) : (
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {winnersList.map((w) => {
-                        const itemId = w.id || w._id || "";
-                        const quoteText = ((w as unknown) as Record<string, unknown>).quote as string;
+                        const itemId = String(w.id || w._id || "");
                         return (
                             <div
                                 key={itemId}
@@ -270,9 +307,9 @@ export default function WinnersClient({ initialWinners = [] }: WinnersClientProp
                                         </div>
                                     </div>
 
-                                    {quoteText && (
+                                    {w.quote && (
                                         <p className="text-xs mt-3 text-gray-600 italic line-clamp-3">
-                                            {quoteText}
+                                            {w.quote}
                                         </p>
                                     )}
                                 </div>
@@ -316,7 +353,6 @@ export default function WinnersClient({ initialWinners = [] }: WinnersClientProp
                     </DialogHeader>
 
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 mt-2">
-                        {/* IMAGE INPUT & PREVIEW */}
                         <div>
                             <label className="text-xs font-medium text-gray-700 block mb-1">
                                 Winner Image
@@ -372,6 +408,16 @@ export default function WinnersClient({ initialWinners = [] }: WinnersClientProp
                             </div>
 
                             <div>
+                                <label className="text-xs font-medium block mb-1">Order</label>
+                                <input
+                                    type="number"
+                                    placeholder="Display Order"
+                                    {...register("order")}
+                                    className="w-full border border-gray-300 px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-black"
+                                />
+                            </div>
+
+                            <div>
                                 <label className="text-xs font-medium block mb-1">Social URL</label>
                                 <input
                                     placeholder="https://..."
@@ -393,20 +439,19 @@ export default function WinnersClient({ initialWinners = [] }: WinnersClientProp
 
                         {/* BUTTONS */}
                         <div className="flex justify-end gap-2 pt-2">
-                            <div>
+                            <div className="px-4 py-2 border rounded-lg text-sm hover:bg-gray-50 border-gray-300 transition cursor-pointer">
                                 <button
                                     type="button"
                                     onClick={() => {
                                         setOpen(false);
                                         resetFormAndStates();
                                     }}
-                                    className="px-4 py-2 border rounded-lg text-sm hover:bg-gray-50 border-gray-300 transition cursor-pointer"
                                 >
                                     Cancel
                                 </button>
                             </div>
 
-                            <div className="bg-black text-white px-5 py-2 rounded-lg text-sm hover:bg-gray-800 transition flex items-center gap-2 disabled:opacity-50 cursor-pointer">
+                            <div className="bg-black text-white px-5 py-2 rounded-lg text-sm hover:bg-gray-800 transition  disabled:opacity-50 cursor-pointe">
                                 <button
                                     type="submit"
                                     disabled={isSubmitting}
