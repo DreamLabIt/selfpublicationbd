@@ -104,16 +104,9 @@ export async function getPublicWinnersAction(): Promise<{
             };
         }
 
-        const winnersData =
-            (Array.isArray(result) && result) ||
-            (Array.isArray(result?.data) && result.data) ||
-            (Array.isArray(result?.data?.winners) && result.data.winners) ||
-            (Array.isArray(result?.winners) && result.winners) ||
-            [];
-
         return {
             success: true,
-            data: winnersData.map(normalizeWinner),
+            data: result?.data?.winners || result?.data || result || [],
         };
     } catch {
         return {
