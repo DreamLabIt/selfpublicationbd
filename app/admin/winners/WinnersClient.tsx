@@ -235,34 +235,38 @@ export default function WinnersClient({ initialWinners = [] }: WinnersClientProp
         });
     };
 
-    const getFullImageUrl = (url?: string) => {
-        if (!url) return "";
-        if (url.startsWith("http://") || url.startsWith("https://") || url.startsWith("blob:")) {
-            return url;
+    const getFullImageUrl = (u?: string) => {
+        if (!u) return "";
+        if (
+            u.startsWith("blob:") ||
+            u.startsWith("http://") ||
+            u.startsWith("https://")
+        )
+            return u;
+        const baseUrl = BACKEND_URL;
+        const cleanPath = u.replace(/^\//, "");
+        if (cleanPath.startsWith("api/v1/")) {
+            return `${baseUrl}/${cleanPath}`;
         }
-        const cleanBackendUrl = (BACKEND_URL || "").replace(/\/+$/, "");
-        const cleanUrl = url.replace(/^\/+/, "");
-        return `${cleanBackendUrl}/${cleanUrl}`;
+        return `${baseUrl}/api/v1/${cleanPath}`;
     };
 
     return (
         <div className="p-4 md:p-6 max-w-7xl mx-auto">
-            {/* HEADER */}
             <div className="flex items-center justify-between mb-6">
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight">Winners</h1>
-                    <p className="text-sm text-gray-500">
-                        উইনারদের তালিকা পরিচালনা করুন।
-                    </p>
                 </div>
 
-                <button
-                    onClick={openNew}
-                    className="bg-black hover:bg-gray-800 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer flex items-center gap-2"
-                >
-                    <Plus className="w-4 h-4" />
-                    Add Winner
-                </button>
+                <div className="bg-black hover:bg-gray-800 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer ">
+                    <button
+                        onClick={openNew}
+                        className="flex items-center gap-2"
+                    >
+                        <Plus className="w-4 h-4" />
+                        Add Winner
+                    </button>
+                </div>
             </div>
 
             {/* WINNERS LIST */}
@@ -271,13 +275,14 @@ export default function WinnersClient({ initialWinners = [] }: WinnersClientProp
                     কোনো উইনার পাওয়া যায়নি। নতুন উইনার যুক্ত করতে Add Winner বাটনে ক্লিক করুন।
                 </div>
             ) : (
+
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {winnersList.map((w) => {
                         const itemId = String(w.id || w._id || "");
                         return (
                             <div
                                 key={itemId}
-                                className="bg-white border rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between"
+                                className="bg-white border border-gray-200 rounded-2xl p-5 flex flex-col justify-between"
                             >
                                 <div>
                                     <div className="flex items-center gap-3">
@@ -285,24 +290,22 @@ export default function WinnersClient({ initialWinners = [] }: WinnersClientProp
                                             <div className="relative w-12 h-12 shrink-0">
                                                 <Image
                                                     src={getFullImageUrl(w.image)}
-                                                    alt={w.name}
+                                                    alt={w.name || "Winner"}
                                                     fill
                                                     unoptimized
-                                                    className="rounded-full object-cover border"
+                                                    className="w-12 h-12 rounded-full object-cover"
                                                 />
                                             </div>
                                         ) : (
-                                            <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center border shrink-0">
+                                            <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center shrink-0">
                                                 <ImageIcon className="w-5 h-5 text-gray-400" />
                                             </div>
                                         )}
 
                                         <div className="overflow-hidden">
-                                            <div className="font-bold text-gray-900 truncate">
-                                                {w.name}
-                                            </div>
+                                            <div className="font-bold text-gray-900 truncate">{w.name}</div>
                                             <div className="text-xs text-gray-500 truncate">
-                                                {w.designation} {w.office ? `• ${w.office}` : ""}
+                                                {w.designation}
                                             </div>
                                         </div>
                                     </div>
@@ -314,18 +317,18 @@ export default function WinnersClient({ initialWinners = [] }: WinnersClientProp
                                     )}
                                 </div>
 
-                                <div className="flex justify-end gap-1 mt-4 pt-3 border-t">
+                                <div className="flex justify-end gap-2 mt-3">
                                     <button
                                         onClick={() => openEdit(w)}
-                                        className="p-1.5 text-gray-600 hover:bg-gray-100 rounded-md transition-colors cursor-pointer"
+                                        className="p-1.5 hover:bg-gray-100 rounded transition-colors cursor-pointer"
                                         title="Edit"
                                     >
-                                        <Edit className="w-4 h-4" />
+                                        <Edit className="w-4 h-4 text-gray-700" />
                                     </button>
 
                                     <button
                                         onClick={() => handleDelete(itemId)}
-                                        className="p-1.5 text-red-500 hover:bg-red-50 rounded-md transition-colors cursor-pointer"
+                                        className="p-1.5 text-red-500 hover:bg-red-50 rounded transition-colors cursor-pointer"
                                         title="Delete"
                                     >
                                         <Trash2 className="w-4 h-4" />
