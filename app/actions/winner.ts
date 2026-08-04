@@ -73,13 +73,13 @@ function clearWinnerCache(winnerId?: string | number) {
     }
 }
 
-// Helper to normalize Winner ID
+// Winner ID
 const normalizeWinner = (winner: Winner): Winner => ({
     ...winner,
     id: winner.id || winner._id,
 });
 
-// 1. GET Public Active Winners
+// 1. GET Public Winners
 export async function getPublicWinnersAction(): Promise<{
     success: boolean;
     data: Winner[];
@@ -319,6 +319,7 @@ export async function updateWinnerAction(
         return { success: false, message: "সার্ভারে সমস্যা হয়েছে।" };
     }
 }
+
 // 6. DELETE Winner
 export async function deleteWinnerAction(id: string | number): Promise<ActionResult> {
     if (!id || id === "undefined") {

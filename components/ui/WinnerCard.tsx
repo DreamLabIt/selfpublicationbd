@@ -73,8 +73,8 @@ export default function WinnerCard({ winner }: WinnerCardProps) {
                             {typeof winner.department === "string"
                                 ? winner.department
                                 : typeof winner.office === "string"
-                                    ? winner.office
-                                    : undefined}
+                                ? winner.office
+                                : undefined}
                         </div>
                     </div>
                 </div>
